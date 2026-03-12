@@ -136,16 +136,14 @@ class OAuthCallbackHandler(http.server.BaseHTTPRequestHandler):
             <p style="color:#71717a;">Completing authentication...</p>
             </div>
             <script>
-            // Hash fragment contains the token
             const hash = window.location.hash.substring(1);
             if (hash) {
                 const params = new URLSearchParams(hash);
                 const token = params.get("access_token");
                 if (token) {
-                    // Send token back to our callback endpoint
                     fetch("/callback?access_token=" + encodeURIComponent(token))
                     .then(() => {
-                        document.querySelector(".c").innerHTML = '<p style="font-size:48px;margin-bottom:16px;">&#x2705;</p><h2>Signed in!</h2><p style="color:#71717a;">You can close this tab and return to SnapShotAI.</p>';
+                        window.location.href = "https://snapshotai-beta.vercel.app/dashboard";
                     });
                 }
             }
