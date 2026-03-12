@@ -641,6 +641,7 @@
                 <a href="#how">How It Works</a>
                 <a href="#features">Features</a>
                 <a href="#pricing">Pricing</a>
+                <a href="/dashboard" class="nav-cta" style="background:transparent !important;border:1px solid rgba(139,92,246,0.3) !important;">Dashboard</a>
                 <a href="#download" class="nav-cta">Download Free</a>
             </div>
             <button class="nav-hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">☰</button>
@@ -652,6 +653,7 @@
         <a href="#how">How It Works</a>
         <a href="#features">Features</a>
         <a href="#pricing">Pricing</a>
+        <a href="/dashboard">Dashboard</a>
         <a href="#download">Download Free</a>
     </div>
 
@@ -946,15 +948,8 @@
                 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 const { data: { session } } = await sb.auth.getSession();
                 if (session) {
-                    document.body.innerHTML = `
-                        <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0a14;color:#fff;font-family:Inter,sans-serif;">
-                            <div style="text-align:center;max-width:460px;padding:40px;">
-                                <div style="font-size:48px;margin-bottom:16px;">✅</div>
-                                <h1 style="font-size:24px;margin-bottom:8px;">Signed in!</h1>
-                                <p style="color:#71717a;margin-bottom:24px;">Welcome, ${session.user.email}</p>
-                                <p style="color:#71717a;font-size:14px;">You can close this tab and return to SnapShotAI.</p>
-                            </div>
-                        </div>`;
+                    // Redirect to dashboard
+                    window.location.href = '/dashboard';
                 }
             }
         }
