@@ -1,0 +1,91 @@
+name: Build SnapShotAI
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install PyQt6 Pillow keyboard pyinstaller
+      
+      - name: Build .exe
+        run: |
+          cd app
+          pyinstaller --name SnapShotAI --onefile --windowed --clean snapshotai.py
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SnapShotAI-Windows
+          path: app/dist/SnapShotAI.exe
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install PyQt6 Pillow keyboard pyinstaller
+      
+      - name: Build .app
+        run: |
+          cd app
+          pyinstaller --name SnapShotAI --onefile --windowed --osx-bundle-identifier com.snapshotai.app --clean snapshotai.py
+      
+      - name: Create DMG
+        run: |
+          cd app/dist
+          mkdir -p dmg_contents
+          cp -r SnapShotAI dmg_contents/ 2>/dev/null || cp SnapShotAI dmg_contents/
+          hdiutil create -volname "SnapShotAI" -srcfolder dmg_contents -ov -format UDZO SnapShotAI.dmg
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SnapShotAI-Mac
+          path: app/dist/SnapShotAI.dmg
+
+  release:
+    needs: [build-windows, build-mac]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Windows build
+        uses: actions/download-artifact@v4
+        with:
+          name: SnapShotAI-Windows
+          path: ./release
+      
+      - name: Download Mac build
+        uses: actions/download-artifact@v4
+        with:
+          name: SnapShotAI-Mac
+          path: ./release
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/SnapShotAI.exe
+            release/SnapShotAI.dmg
+          generate_release_notes: true

@@ -1,0 +1,13 @@
+{
+  "buildCommand": "",
+  "outputDirectory": "landing",
+  "functions": {
+    "api/*.py": {
+      "runtime": "@vercel/python@4.6.0"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

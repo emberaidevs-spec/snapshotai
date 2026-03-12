@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnapShotAI — Screenshot it. Understand it. Instantly.</title>
+    <meta name="description" content="Press a hotkey, select anything on your screen, and let AI break it down. Code, notes, diagrams, errors — understood in seconds. Free for students.">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="SnapShotAI — Screenshot it. Understand it. Instantly.">
+    <meta property="og:description" content="Press a hotkey, select anything on your screen, and let AI break it down. Code, notes, diagrams, errors — understood in seconds.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://snapshotai-beta.vercel.app">
+    <meta property="og:image" content="https://snapshotai-beta.vercel.app/og.png">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SnapShotAI — Screenshot it. Understand it. Instantly.">
+    <meta name="twitter:description" content="AI-powered screen capture for students. Capture anything, understand everything.">
+    
+    <!-- Favicon (inline SVG - purple lightning bolt) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%238b5cf6'/><text x='50%25' y='55%25' dominant-baseline='central' text-anchor='middle' font-size='20'>⚡</text></svg>">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a14;
+            --surface: #111127;
+            --purple: #8b5cf6;
+            --purple-dark: #7c3aed;
+            --blue: #3b82f6;
+            --text: #ffffff;
+            --body: #a1a1aa;
+            --caption: #71717a;
+            --border: rgba(255,255,255,0.06);
+            --glass-bg: rgba(17,17,39,0.6);
+            --glass-border: rgba(255,255,255,0.08);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--body);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(139,92,246,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(139,92,246,0.025) 1px, transparent 1px);
+            background-size: 64px 64px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        main { position: relative; z-index: 1; }
+        h1, h2, h3, h4 { color: var(--text); }
+        code, .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* ========== NAV ========== */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 16px 0;
+            transition: background 0.3s, backdrop-filter 0.3s, border-color 0.3s;
+            border-bottom: 1px solid transparent;
+        }
+        nav.scrolled {
+            background: rgba(10,10,20,0.82);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom-color: var(--border);
+        }
+        .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-logo .icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--purple), var(--blue));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+        .nav-links a {
+            color: var(--caption);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); }
+        .nav-cta {
+            padding: 10px 20px !important;
+            background: var(--purple) !important;
+            color: var(--text) !important;
+            border-radius: 10px !important;
+            font-weight: 600 !important;
+            transition: all 0.2s !important;
+        }
+        .nav-cta:hover {
+            background: var(--purple-dark) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(139,92,246,0.25);
+        }
+        .nav-hamburger {
+            display: none;
+            cursor: pointer;
+            color: var(--text);
+            font-size: 22px;
+            background: none;
+            border: none;
+            padding: 4px;
+        }
+
+        /* Mobile nav */
+        .nav-mobile-menu {
+            display: none;
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            background: rgba(10,10,20,0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 20px 24px;
+            flex-direction: column;
+            gap: 16px;
+            z-index: 99;
+        }
+        .nav-mobile-menu.open { display: flex; }
+        .nav-mobile-menu a {
+            color: var(--body);
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 8px 0;
+        }
+
+        /* ========== HERO ========== */
+        .hero {
+            padding: 160px 0 80px;
+            text-align: center;
+            position: relative;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 700px;
+            height: 700px;
+            background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 65%);
+            pointer-events: none;
+        }
+        .hero h1 {
+            font-size: clamp(40px, 5.5vw, 64px);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            margin-bottom: 22px;
+            position: relative;
+        }
+        .gradient {
+            background: linear-gradient(135deg, var(--purple), var(--blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-sub {
+            font-size: 18px;
+            color: var(--body);
+            max-width: 580px;
+            margin: 0 auto 36px;
+            line-height: 1.7;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .btn-primary {
+            background: var(--purple);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--purple), var(--blue));
+            transform: translateY(-1px);
+            box-shadow: 0 8px 32px rgba(139,92,246,0.3);
+        }
+        .btn-ghost {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--glass-border);
+        }
+        .btn-ghost:hover {
+            border-color: rgba(139,92,246,0.4);
+            background: rgba(139,92,246,0.05);
+            transform: translateY(-1px);
+        }
+        .btn-icon { font-size: 18px; }
+        .hero-note {
+            font-size: 13px;
+            color: var(--caption);
+        }
+
+        /* Hero mockup */
+        .hero-mockup {
+            max-width: 820px;
+            margin: 64px auto 0;
+            position: relative;
+        }
+        .hero-mockup::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 130%;
+            height: 130%;
+            background: radial-gradient(ellipse, rgba(139,92,246,0.07) 0%, transparent 55%);
+            pointer-events: none;
+        }
+        .mockup-window {
+            background: var(--surface);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+            position: relative;
+        }
+        .mockup-titlebar {
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mockup-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot-red { background: #ef4444; }
+        .dot-yellow { background: #eab308; }
+        .dot-green { background: #22c55e; }
+        .mockup-body {
+            padding: 28px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            min-height: 280px;
+        }
+        .mockup-screen { flex: 1; position: relative; }
+        .mockup-code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12.5px;
+            line-height: 1.9;
+            color: var(--body);
+            padding: 20px;
+            background: rgba(0,0,0,0.35);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .mockup-code .kw { color: #c084fc; }
+        .mockup-code .fn { color: #60a5fa; }
+        .mockup-code .str { color: #34d399; }
+        .mockup-code .cm { color: #525280; }
+        .mockup-code .num { color: #f59e0b; }
+        .mockup-selection {
+            position: absolute;
+            top: 32px;
+            left: 8px;
+            right: 8px;
+            bottom: 32px;
+            border: 2px solid var(--purple);
+            border-radius: 6px;
+            background: rgba(139,92,246,0.05);
+            animation: sel-pulse 2.5s ease-in-out infinite;
+        }
+        @keyframes sel-pulse {
+            0%, 100% { border-color: var(--purple); opacity: 0.6; }
+            50% { border-color: #a78bfa; opacity: 1; }
+        }
+        .mockup-overlay {
+            width: 270px;
+            flex-shrink: 0;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        }
+        .overlay-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--purple);
+            margin-bottom: 14px;
+        }
+        .overlay-text { font-size: 12.5px; line-height: 1.7; color: var(--body); }
+        .overlay-text strong { color: var(--text); font-weight: 600; }
+        .overlay-text code {
+            background: rgba(139,92,246,0.12);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11.5px;
+            color: #c084fc;
+        }
+        .overlay-input {
+            margin-top: 16px;
+            padding: 10px 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            font-size: 11.5px;
+            color: var(--caption);
+            font-family: inherit;
+            width: 100%;
+        }
+
+        /* ========== TRUST BAR ========== */
+        .trust {
+            padding: 44px 0;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+        .trust p { font-size: 14px; color: var(--caption); letter-spacing: 0.01em; }
+
+        /* ========== SECTIONS ========== */
+        .section { padding: 110px 0; }
+        .section-header { text-align: center; margin-bottom: 56px; }
+        .section-header h2 {
+            font-size: clamp(28px, 3.5vw, 40px);
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            margin-bottom: 12px;
+        }
+        .section-header p {
+            font-size: 16px;
+            color: var(--caption);
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* ========== GLASS CARD ========== */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            transition: all 0.3s;
+        }
+        .glass:hover {
+            transform: translateY(-2px);
+            border-color: rgba(139,92,246,0.2);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+        }
+
+        /* ========== HOW IT WORKS ========== */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .step-card { padding: 36px 28px; text-align: center; }
+        .step-num {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--purple), var(--blue));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            margin: 0 auto 20px;
+        }
+        .step-icon { font-size: 36px; margin-bottom: 16px; }
+        .step-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+        .step-card p { font-size: 14px; line-height: 1.7; }
+        .kbd {
+            display: inline-block;
+            padding: 3px 8px;
+            background: rgba(0,0,0,0.45);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 2px solid rgba(255,255,255,0.07);
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11.5px;
+            color: var(--text);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+            line-height: 1;
+        }
+
+        /* ========== FEATURES ========== */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .feature-card { padding: 28px 24px; display: flex; flex-direction: column; gap: 12px; }
+        .feature-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(139,92,246,0.1);
+            border: 1px solid rgba(139,92,246,0.12);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .feature-card h3 { font-size: 16px; font-weight: 600; }
+        .feature-card p { font-size: 14px; line-height: 1.65; }
+
+        /* ========== USE CASES ========== */
+        .cases-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        .case-card { padding: 28px 22px; text-align: center; }
+        .case-icon { font-size: 32px; margin-bottom: 14px; }
+        .case-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+        .case-card p { font-size: 13px; line-height: 1.65; }
+
+        /* ========== PRICING ========== */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        .price-card { padding: 40px 32px; position: relative; }
+        .price-card.popular {
+            border-color: rgba(139,92,246,0.35);
+            box-shadow: 0 0 60px rgba(139,92,246,0.08), 0 0 120px rgba(139,92,246,0.04);
+        }
+        .price-badge {
+            position: absolute;
+            top: -13px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--purple), var(--blue));
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 5px 16px;
+            border-radius: 100px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .price-card h3 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+        .price-amount {
+            font-size: 52px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 20px 0 4px;
+            letter-spacing: -0.02em;
+        }
+        .price-amount span { font-size: 16px; font-weight: 500; color: var(--caption); }
+        .price-sub { font-size: 14px; color: var(--caption); margin-bottom: 28px; }
+        .price-features { list-style: none; margin-bottom: 32px; }
+        .price-features li {
+            padding: 9px 0;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .price-features li::before { content: '✓'; color: var(--purple); font-weight: 700; }
+        .price-card .btn { width: 100%; justify-content: center; }
+        .pricing-note {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 13px;
+            color: var(--caption);
+        }
+
+        /* ========== CTA ========== */
+        .cta-section {
+            padding: 100px 0 120px;
+            text-align: center;
+            position: relative;
+        }
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 65%);
+            pointer-events: none;
+        }
+        .cta-section h2 {
+            font-size: clamp(28px, 3.5vw, 40px);
+            font-weight: 700;
+            margin-bottom: 14px;
+            position: relative;
+        }
+        .cta-section > .container > p {
+            color: var(--caption);
+            font-size: 16px;
+            margin-bottom: 32px;
+        }
+
+        /* ========== FOOTER ========== */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 28px 0;
+        }
+        .footer-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        footer p { font-size: 13px; color: var(--caption); }
+        .footer-links { display: flex; gap: 24px; }
+        .footer-links a {
+            font-size: 13px;
+            color: var(--caption);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: var(--body); }
+
+        /* ========== ANIMATIONS ========== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 900px) {
+            .steps-grid { grid-template-columns: 1fr; gap: 16px; }
+            .features-grid { grid-template-columns: 1fr 1fr; }
+            .cases-grid { grid-template-columns: 1fr 1fr; }
+            .mockup-body { flex-direction: column; }
+            .mockup-overlay { width: 100%; }
+            .nav-links { display: none; }
+            .nav-hamburger { display: block; }
+            .footer-inner { flex-direction: column; gap: 12px; }
+        }
+        @media (max-width: 600px) {
+            .features-grid { grid-template-columns: 1fr; }
+            .cases-grid { grid-template-columns: 1fr; }
+            .pricing-grid { grid-template-columns: 1fr; }
+            .hero { padding: 120px 0 60px; }
+            .hero-buttons { flex-direction: column; align-items: center; }
+            .hero-buttons .btn { width: 100%; max-width: 300px; justify-content: center; }
+            .section { padding: 80px 0; }
+            .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Nav -->
+    <nav id="nav" role="navigation" aria-label="Main navigation">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo" aria-label="SnapShotAI home">
+                <div class="icon" aria-hidden="true">⚡</div>
+                SnapShotAI
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="#how">How It Works</a>
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#download" class="nav-cta">Download Free</a>
+            </div>
+            <button class="nav-hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">☰</button>
+        </div>
+    </nav>
+
+    <!-- Mobile menu -->
+    <div class="nav-mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+        <a href="#how">How It Works</a>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#download">Download Free</a>
+    </div>
+
+    <main>
+        <!-- Hero -->
+        <section class="hero" aria-label="Hero">
+            <div class="container">
+                <h1 class="reveal">Screenshot it.<br><span class="gradient">Understand it. Instantly.</span></h1>
+                <p class="hero-sub reveal">Press a hotkey, select anything on your screen, and let AI break it down — code, notes, diagrams, error messages, anything.</p>
+                <div class="hero-buttons reveal">
+                    <a href="#download" class="btn btn-primary" role="button">
+                        <span class="btn-icon" aria-hidden="true">⊞</span> Download for Windows
+                    </a>
+                    <a href="#download" class="btn btn-ghost" role="button">
+                        <span class="btn-icon" aria-hidden="true">🍎</span> Download for Mac
+                    </a>
+                </div>
+                <p class="hero-note reveal">Free forever · No account required · Pro starts at $5.99/mo</p>
+
+                <!-- Mockup -->
+                <div class="hero-mockup reveal" aria-label="Product demonstration">
+                    <div class="mockup-window">
+                        <div class="mockup-titlebar" aria-hidden="true">
+                            <div class="mockup-dot dot-red"></div>
+                            <div class="mockup-dot dot-yellow"></div>
+                            <div class="mockup-dot dot-green"></div>
+                        </div>
+                        <div class="mockup-body">
+                            <div class="mockup-screen">
+                                <div class="mockup-code" aria-label="Example code with a bug">
+                                    <div class="mockup-selection" aria-hidden="true"></div>
+                                    <span class="kw">def</span> <span class="fn">binary_search</span>(arr, target):<br>
+                                    &nbsp;&nbsp;low, high = <span class="num">0</span>, <span class="fn">len</span>(arr) - <span class="num">1</span><br>
+                                    &nbsp;&nbsp;<span class="kw">while</span> low &lt;= high:<br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;mid = (low + high) // <span class="num">2</span><br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> arr[mid] == target:<br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> mid<br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">elif</span> arr[mid] &lt; target:<br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;low = mid <span class="cm"># ← Bug here</span><br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">else</span>:<br>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;high = mid - <span class="num">1</span><br>
+                                    &nbsp;&nbsp;<span class="kw">return</span> -<span class="num">1</span>
+                                </div>
+                            </div>
+                            <div class="mockup-overlay">
+                                <div class="overlay-header">📸 SnapShotAI</div>
+                                <div class="overlay-text">
+                                    <strong>This is a binary search function</strong> with a bug on line 8.
+                                    <code>low = mid</code> should be <code>low = mid + 1</code> — without it,
+                                    the loop can run forever when the target is greater than <code>arr[mid]</code>.
+                                </div>
+                                <div class="overlay-input" aria-hidden="true">Ask a follow-up question...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trust Bar -->
+        <div class="trust reveal" aria-label="Social proof">
+            <div class="container">
+                <p>Join thousands of students studying smarter at universities everywhere</p>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <section class="section" id="how" aria-label="How it works">
+            <div class="container">
+                <div class="section-header reveal">
+                    <h2>Three seconds. That's all it takes.</h2>
+                    <p>No setup. No switching windows. Just capture and understand.</p>
+                </div>
+                <div class="steps-grid">
+                    <div class="step-card glass reveal" data-delay="0">
+                        <div class="step-num" aria-hidden="true">1</div>
+                        <div class="step-icon" aria-hidden="true">⌨️</div>
+                        <h3>Press the hotkey</h3>
+                        <p>Hit <span class="kbd">Ctrl</span> + <span class="kbd">Shift</span> + <span class="kbd">S</span> from anywhere. On Mac, use <span class="kbd">⌘</span> + <span class="kbd">Shift</span> + <span class="kbd">S</span>. Always ready in your system tray.</p>
+                    </div>
+                    <div class="step-card glass reveal" data-delay="100">
+                        <div class="step-num" aria-hidden="true">2</div>
+                        <div class="step-icon" aria-hidden="true">🎯</div>
+                        <h3>Select anything</h3>
+                        <p>Drag to capture any area — code, a textbook paragraph, an error message, a diagram, a formula. Whatever's on screen.</p>
+                    </div>
+                    <div class="step-card glass reveal" data-delay="200">
+                        <div class="step-num" aria-hidden="true">3</div>
+                        <div class="step-icon" aria-hidden="true">✨</div>
+                        <h3>Get instant answers</h3>
+                        <p>AI analyzes your capture in seconds. Ask follow-ups right in the overlay. Like having a tutor on call 24/7.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="section" id="features" aria-label="Features">
+            <div class="container">
+                <div class="section-header reveal">
+                    <h2>Everything you need, nothing you don't.</h2>
+                    <p>Powerful features, zero bloat.</p>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card glass reveal" data-delay="0">
+                        <div class="feature-icon" aria-hidden="true">🧠</div>
+                        <h3>AI-Powered Analysis</h3>
+                        <p>Understands code, math, text, diagrams, and error messages out of the box.</p>
+                    </div>
+                    <div class="feature-card glass reveal" data-delay="100">
+                        <div class="feature-icon" aria-hidden="true">💬</div>
+                        <h3>Follow-Up Questions</h3>
+                        <p>Don't just get one answer. Ask deeper questions in a conversational thread.</p>
+                    </div>
+                    <div class="feature-card glass reveal" data-delay="200">
+                        <div class="feature-icon" aria-hidden="true">👻</div>
+                        <h3>Invisible by Design</h3>
+                        <p>Runs silently in your system tray. Zero distraction until you need it.</p>
+                    </div>
+                    <div class="feature-card glass reveal" data-delay="0">
+                        <div class="feature-icon" aria-hidden="true">⚡</div>
+                        <h3>Lightning Fast</h3>
+                        <p>Results in under 2 seconds. No loading screens, no context switching.</p>
+                    </div>
+                    <div class="feature-card glass reveal" data-delay="100">
+                        <div class="feature-icon" aria-hidden="true">🖥️</div>
+                        <h3>Works Everywhere</h3>
+                        <p>Capture from any app — VS Code, Chrome, PDFs, Zoom lectures, anything on screen.</p>
+                    </div>
+                    <div class="feature-card glass reveal" data-delay="200">
+                        <div class="feature-icon" aria-hidden="true">🔒</div>
+                        <h3>Privacy First</h3>
+                        <p>Captures are processed and discarded. We never store your screenshots.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Use Cases -->
+        <section class="section" aria-label="Use cases">
+            <div class="container">
+                <div class="section-header reveal">
+                    <h2>Built for how you actually study.</h2>
+                    <p>Real scenarios, real help.</p>
+                </div>
+                <div class="cases-grid">
+                    <div class="case-card glass reveal" data-delay="0">
+                        <div class="case-icon" aria-hidden="true">🐛</div>
+                        <h3>Debugging Code</h3>
+                        <p>Stuck on an error at 2am? Capture it and get a fix in seconds.</p>
+                    </div>
+                    <div class="case-card glass reveal" data-delay="100">
+                        <div class="case-icon" aria-hidden="true">📖</div>
+                        <h3>Dense Notes</h3>
+                        <p>Screenshot a confusing textbook paragraph and get a plain-English breakdown.</p>
+                    </div>
+                    <div class="case-card glass reveal" data-delay="200">
+                        <div class="case-icon" aria-hidden="true">📊</div>
+                        <h3>Diagrams & Charts</h3>
+                        <p>Capture a circuit diagram or UML chart and ask AI to walk you through it.</p>
+                    </div>
+                    <div class="case-card glass reveal" data-delay="300">
+                        <div class="case-icon" aria-hidden="true">📐</div>
+                        <h3>Homework Help</h3>
+                        <p>Snap a problem set question, get step-by-step guidance without leaving your desk.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing -->
+        <section class="section" id="pricing" aria-label="Pricing">
+            <div class="container">
+                <div class="section-header reveal">
+                    <h2>Start free. Upgrade when you're hooked.</h2>
+                    <p>No credit card required. Cancel anytime.</p>
+                </div>
+                <div class="pricing-grid">
+                    <div class="price-card glass reveal" data-delay="0">
+                        <h3>Free</h3>
+                        <div class="price-amount">$0</div>
+                        <div class="price-sub">Forever free</div>
+                        <ul class="price-features">
+                            <li>15 captures per day</li>
+                            <li>AI-powered analysis</li>
+                            <li>Follow-up questions</li>
+                            <li>Windows + Mac</li>
+                        </ul>
+                        <a href="#download" class="btn btn-ghost">Download Free</a>
+                    </div>
+                    <div class="price-card glass popular reveal" data-delay="100">
+                        <div class="price-badge">✨ Most Popular</div>
+                        <h3>Pro</h3>
+                        <div class="price-amount">$5.99<span>/mo</span></div>
+                        <div class="price-sub">For power users</div>
+                        <ul class="price-features">
+                            <li>Unlimited captures</li>
+                            <li>Priority AI responses</li>
+                            <li>Capture history & search</li>
+                            <li>Windows + Mac</li>
+                            <li>Early access to new features</li>
+                        </ul>
+                        <a href="#download" class="btn btn-primary">Go Pro</a>
+                    </div>
+                </div>
+                <p class="pricing-note reveal">Cancel anytime. Student discounts coming soon.</p>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section class="cta-section" id="download" aria-label="Download">
+            <div class="container">
+                <h2 class="reveal">Stop copying and pasting into ChatGPT.</h2>
+                <p class="reveal">Download SnapShotAI in 30 seconds. Free, lightweight, and private.</p>
+                <div class="hero-buttons reveal">
+                    <a href="#" class="btn btn-primary" role="button">
+                        <span class="btn-icon" aria-hidden="true">⊞</span> Download for Windows
+                    </a>
+                    <a href="#" class="btn btn-ghost" role="button">
+                        <span class="btn-icon" aria-hidden="true">🍎</span> Download for Mac
+                    </a>
+                </div>
+                <p class="hero-note reveal" style="margin-top: 16px;">Free · Works on Windows 10+ and macOS 12+</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer role="contentinfo">
+        <div class="container">
+            <div class="footer-inner">
+                <p>© 2026 SnapShotAI</p>
+                <div class="footer-links">
+                    <a href="https://twitter.com/EmberdevAi" target="_blank" rel="noopener">Twitter</a>
+                    <a href="https://discord.gg/" target="_blank" rel="noopener">Discord</a>
+                    <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Supabase Auth Handler -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // ===== Nav scroll effect =====
+        const nav = document.getElementById('nav');
+        window.addEventListener('scroll', () => {
+            nav.classList.toggle('scrolled', window.scrollY > 40);
+        }, { passive: true });
+
+        // ===== Mobile menu =====
+        const hamburger = document.getElementById('hamburger');
+        const mobileMenu = document.getElementById('mobileMenu');
+        hamburger.addEventListener('click', () => {
+            const open = mobileMenu.classList.toggle('open');
+            hamburger.setAttribute('aria-expanded', open);
+            hamburger.textContent = open ? '✕' : '☰';
+        });
+        // Close on link click
+        mobileMenu.querySelectorAll('a').forEach(a => {
+            a.addEventListener('click', () => {
+                mobileMenu.classList.remove('open');
+                hamburger.setAttribute('aria-expanded', 'false');
+                hamburger.textContent = '☰';
+            });
+        });
+
+        // ===== Reveal on scroll with stagger =====
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const delay = parseInt(entry.target.dataset.delay || '0', 10);
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, delay);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // ===== Supabase auth callback =====
+        const SUPABASE_URL = 'https://xiwfuenqxyfzadggakip.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpd2Z1ZW5xeHlmemFkZ2dha2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzYxNDQsImV4cCI6MjA4ODkxMjE0NH0.leYWfPUg8NLIA3YcFEH5w_gbuVMLw-Z6OVu7_tme4QA';
+
+        async function handleAuth() {
+            const hash = window.location.hash;
+            if (hash && hash.includes('access_token')) {
+                const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                const { data: { session } } = await sb.auth.getSession();
+                if (session) {
+                    document.body.innerHTML = `
+                        <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0a14;color:#fff;font-family:Inter,sans-serif;">
+                            <div style="text-align:center;max-width:460px;padding:40px;">
+                                <div style="font-size:48px;margin-bottom:16px;">✅</div>
+                                <h1 style="font-size:24px;margin-bottom:8px;">Signed in!</h1>
+                                <p style="color:#71717a;margin-bottom:24px;">Welcome, ${session.user.email}</p>
+                                <p style="color:#71717a;font-size:14px;">You can close this tab and return to SnapShotAI.</p>
+                            </div>
+                        </div>`;
+                }
+            }
+        }
+        handleAuth();
+    </script>
+</body>
+</html>
