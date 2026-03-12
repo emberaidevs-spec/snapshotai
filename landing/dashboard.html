@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnapShotAI — Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%238b5cf6'/><text x='50%25' y='55%25' dominant-baseline='central' text-anchor='middle' font-size='20'>⚡</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0a0a14;
+            --surface: #111127;
+            --purple: #8b5cf6;
+            --purple-dark: #7c3aed;
+            --blue: #3b82f6;
+            --text: #ffffff;
+            --body: #a1a1aa;
+            --caption: #71717a;
+            --border: rgba(255,255,255,0.06);
+            --glass-bg: rgba(17,17,39,0.6);
+            --glass-border: rgba(255,255,255,0.08);
+            --green: #22c55e;
+            --red: #ef4444;
+        }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--body);
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(139,92,246,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(139,92,246,0.025) 1px, transparent 1px);
+            background-size: 64px 64px;
+            pointer-events: none;
+        }
+        h1, h2, h3 { color: var(--text); }
+        .container { max-width: 800px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+        /* Nav */
+        .dash-nav {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+        }
+        .dash-nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dash-nav a {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dash-nav .icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--purple), var(--blue));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .sign-out-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--body);
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .sign-out-btn:hover { border-color: var(--red); color: var(--red); }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 100px 0;
+            font-size: 16px;
+            color: var(--caption);
+        }
+        .loading .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--purple);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Not signed in */
+        .auth-prompt {
+            text-align: center;
+            padding: 80px 0;
+        }
+        .auth-prompt h2 { margin-bottom: 12px; }
+        .auth-prompt p { margin-bottom: 24px; color: var(--caption); }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--purple); color: white; }
+        .btn-primary:hover { background: var(--purple-dark); }
+        .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--glass-border); }
+        .btn-ghost:hover { border-color: var(--purple); }
+
+        /* Dashboard content */
+        .dash-content { padding-bottom: 60px; }
+        .dash-header { margin-bottom: 36px; }
+        .dash-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+        .dash-header p { color: var(--caption); font-size: 14px; }
+
+        /* Cards */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            padding: 24px;
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--caption);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .stat-value.purple { color: var(--purple); }
+        .stat-value.green { color: var(--green); }
+        .stat-sub {
+            font-size: 12px;
+            color: var(--caption);
+            margin-top: 4px;
+        }
+
+        /* Account section */
+        .account-card {
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+        .account-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-size: 14px; color: var(--caption); }
+        .info-value { font-size: 14px; color: var(--text); font-weight: 500; }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-free {
+            background: rgba(139,92,246,0.1);
+            color: var(--purple);
+            border: 1px solid rgba(139,92,246,0.2);
+        }
+        .badge-pro {
+            background: linear-gradient(135deg, var(--purple), var(--blue));
+            color: white;
+        }
+
+        /* Usage bar */
+        .usage-bar-wrap {
+            margin-top: 16px;
+        }
+        .usage-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        .usage-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 100px;
+            overflow: hidden;
+        }
+        .usage-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--purple), var(--blue));
+            border-radius: 100px;
+            transition: width 0.5s ease;
+        }
+
+        /* Upgrade CTA */
+        .upgrade-card {
+            padding: 32px;
+            text-align: center;
+            border-color: rgba(139,92,246,0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        .upgrade-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .upgrade-card h3 { font-size: 20px; margin-bottom: 8px; position: relative; }
+        .upgrade-card p { color: var(--caption); font-size: 14px; margin-bottom: 20px; position: relative; }
+        .upgrade-card .btn { position: relative; }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .card-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Nav -->
+    <div class="dash-nav">
+        <div class="container">
+            <a href="/">
+                <div class="icon">⚡</div>
+                SnapShotAI
+            </a>
+            <button class="sign-out-btn" id="signOutBtn">Sign Out</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Loading state -->
+        <div id="loadingState" class="loading">
+            <div class="spinner"></div>
+            Loading your dashboard...
+        </div>
+
+        <!-- Not signed in state -->
+        <div id="authPrompt" class="auth-prompt" style="display:none;">
+            <h2>Sign in to view your dashboard</h2>
+            <p>Access your account, usage stats, and subscription details.</p>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                <button class="btn btn-primary" id="googleSignIn">🔑 Sign in with Google</button>
+                <a href="/" class="btn btn-ghost">← Back to home</a>
+            </div>
+        </div>
+
+        <!-- Dashboard content -->
+        <div id="dashContent" class="dash-content" style="display:none;">
+            <div class="dash-header">
+                <h1>Welcome back 👋</h1>
+                <p id="userEmail"></p>
+            </div>
+
+            <!-- Stats -->
+            <div class="card-grid">
+                <div class="stat-card glass">
+                    <div class="stat-label">Today's Captures</div>
+                    <div class="stat-value purple" id="usageCount">—</div>
+                    <div class="stat-sub" id="usageSub"></div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-label">Remaining</div>
+                    <div class="stat-value green" id="remainingCount">—</div>
+                    <div class="stat-sub" id="remainingSub"></div>
+                </div>
+                <div class="stat-card glass">
+                    <div class="stat-label">Plan</div>
+                    <div class="stat-value" id="planValue">—</div>
+                    <div class="stat-sub" id="planSub"></div>
+                </div>
+            </div>
+
+            <!-- Usage bar -->
+            <div class="account-card glass" id="usageBarCard">
+                <h3>📊 Daily Usage</h3>
+                <div class="usage-bar-wrap">
+                    <div class="usage-bar-label">
+                        <span id="usageBarLabel">0 / 15 captures</span>
+                        <span id="usageBarPct">0%</span>
+                    </div>
+                    <div class="usage-bar">
+                        <div class="usage-bar-fill" id="usageBarFill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Info -->
+            <div class="account-card glass">
+                <h3>👤 Account</h3>
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value" id="infoEmail">—</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Plan</span>
+                    <span id="infoPlanBadge"></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">User ID</span>
+                    <span class="info-value" id="infoId" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--caption);">—</span>
+                </div>
+            </div>
+
+            <!-- Upgrade CTA (free users only) -->
+            <div class="upgrade-card glass" id="upgradeCard">
+                <h3>⚡ Upgrade to Pro</h3>
+                <p>Unlimited captures, priority AI, and capture history. Just $5.99/mo.</p>
+                <button class="btn btn-primary" id="upgradeBtn">Go Pro →</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://xiwfuenqxyfzadggakip.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpd2Z1ZW5xeHlmemFkZ2dha2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzYxNDQsImV4cCI6MjA4ODkxMjE0NH0.leYWfPUg8NLIA3YcFEH5w_gbuVMLw-Z6OVu7_tme4QA';
+        const API_BASE = '';
+        
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const $loading = document.getElementById('loadingState');
+        const $auth = document.getElementById('authPrompt');
+        const $dash = document.getElementById('dashContent');
+
+        async function init() {
+            // Check for OAuth callback hash
+            const hash = window.location.hash;
+            if (hash && hash.includes('access_token')) {
+                await sb.auth.getSession();
+                window.location.hash = '';
+            }
+
+            const { data: { session } } = await sb.auth.getSession();
+            
+            if (!session) {
+                $loading.style.display = 'none';
+                $auth.style.display = 'block';
+                return;
+            }
+
+            // Fetch status from API
+            try {
+                const resp = await fetch(`${API_BASE}/api/status`, {
+                    headers: { 'Authorization': `Bearer ${session.access_token}` }
+                });
+                const data = await resp.json();
+                
+                if (data.error) {
+                    console.error('API error:', data.error);
+                }
+                
+                renderDashboard(session, data);
+            } catch (e) {
+                // Fallback: show basic info
+                renderDashboard(session, { 
+                    email: session.user.email, 
+                    plan: 'free', 
+                    usage_today: 0, 
+                    limit: 15, 
+                    remaining: 15 
+                });
+            }
+        }
+
+        function renderDashboard(session, data) {
+            $loading.style.display = 'none';
+            $dash.style.display = 'block';
+
+            const email = data.email || session.user.email;
+            const plan = data.plan || 'free';
+            const usage = data.usage_today || 0;
+            const limit = data.limit || 15;
+            const remaining = data.remaining;
+            const isPro = plan === 'pro';
+
+            // Header
+            document.getElementById('userEmail').textContent = email;
+
+            // Stats
+            document.getElementById('usageCount').textContent = usage;
+            document.getElementById('usageSub').textContent = 'screenshots today';
+            
+            if (isPro) {
+                document.getElementById('remainingCount').textContent = '∞';
+                document.getElementById('remainingSub').textContent = 'unlimited';
+            } else {
+                document.getElementById('remainingCount').textContent = remaining;
+                document.getElementById('remainingSub').textContent = `of ${limit} remaining`;
+            }
+
+            document.getElementById('planValue').textContent = isPro ? 'Pro' : 'Free';
+            document.getElementById('planValue').style.color = isPro ? '#22c55e' : '#8b5cf6';
+            document.getElementById('planSub').textContent = isPro ? '$5.99/mo' : '15/day limit';
+
+            // Usage bar
+            if (isPro) {
+                document.getElementById('usageBarCard').style.display = 'none';
+            } else {
+                const pct = Math.min(100, (usage / limit) * 100);
+                document.getElementById('usageBarLabel').textContent = `${usage} / ${limit} captures`;
+                document.getElementById('usageBarPct').textContent = `${Math.round(pct)}%`;
+                document.getElementById('usageBarFill').style.width = `${pct}%`;
+                if (pct > 80) {
+                    document.getElementById('usageBarFill').style.background = 'linear-gradient(90deg, #f59e0b, #ef4444)';
+                }
+            }
+
+            // Account info
+            document.getElementById('infoEmail').textContent = email;
+            document.getElementById('infoId').textContent = session.user.id;
+            document.getElementById('infoPlanBadge').innerHTML = isPro 
+                ? '<span class="badge badge-pro">⚡ Pro</span>' 
+                : '<span class="badge badge-free">Free</span>';
+
+            // Upgrade card
+            document.getElementById('upgradeCard').style.display = isPro ? 'none' : 'block';
+        }
+
+        // Google Sign In
+        document.getElementById('googleSignIn').addEventListener('click', async () => {
+            await sb.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: window.location.origin + '/dashboard.html' }
+            });
+        });
+
+        // Sign Out
+        document.getElementById('signOutBtn').addEventListener('click', async () => {
+            await sb.auth.signOut();
+            window.location.href = '/';
+        });
+
+        // Upgrade button
+        document.getElementById('upgradeBtn')?.addEventListener('click', () => {
+            // Will connect to Stripe later
+            alert('Pro subscriptions launching soon! 🚀');
+        });
+
+        init();
+    </script>
+</body>
+</html>

@@ -297,6 +297,16 @@ class ResultOverlay(QWidget):
         header.addWidget(self.status_label)
         header.addStretch()
         
+        dash_btn = QPushButton("👤")
+        dash_btn.setFixedSize(28, 28)
+        dash_btn.setToolTip("Open Dashboard")
+        dash_btn.setStyleSheet(f"""
+            QPushButton {{ background: rgba(139,92,246,0.12); border: none; border-radius: 14px; color: {PURPLE}; font-size: 13px; }}
+            QPushButton:hover {{ background: rgba(139,92,246,0.25); }}
+        """)
+        dash_btn.clicked.connect(lambda: webbrowser.open(f"{API_BASE}/dashboard"))
+        header.addWidget(dash_btn)
+        
         close_btn = QPushButton("✕")
         close_btn.setFixedSize(28, 28)
         close_btn.setStyleSheet(f"""

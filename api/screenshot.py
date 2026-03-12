@@ -12,6 +12,7 @@ import google.generativeai as genai
 
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 SUPABASE_URL = os.getenv('SNAPSHOTAI_SUPABASE_URL', '')
+SUPABASE_ANON_KEY = os.getenv('SNAPSHOTAI_SUPABASE_ANON_KEY', '')
 SUPABASE_SERVICE_KEY = os.getenv('SNAPSHOTAI_SUPABASE_SERVICE_KEY', '')
 FREE_DAILY_LIMIT = 15
 MODEL = 'gemini-2.5-flash'
@@ -27,12 +28,13 @@ def verify_user(token):
             f"{SUPABASE_URL}/auth/v1/user",
             headers={
                 'Authorization': f'Bearer {token}',
-                'apikey': SUPABASE_SERVICE_KEY
+                'apikey': SUPABASE_ANON_KEY
             }
         )
-        resp = urllib.request.urlopen(req, timeout=5)
+        resp = urllib.request.urlopen(req, timeout=10)
         return json.loads(resp.read())
-    except:
+    except Exception as e:
+        print(f"Auth verify failed: {e}")
         return None
 
 
