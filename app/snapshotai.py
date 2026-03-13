@@ -779,32 +779,59 @@ class SnapShotAI:
         self._show_login()
     
     def _setup_hotkeys(self):
-        """Register global hotkeys using pynput"""
+        """Register global hotkeys using pynput key listener"""
         try:
             from pynput import keyboard as pynput_kb
             
-            def on_activate_full():
-                QTimer.singleShot(0, self.full_capture)
+            self._pressed_keys = set()
             
-            def on_activate_region():
-                QTimer.singleShot(0, self.start_capture)
+            def on_press(key):
+                try:
+                    # Normalize key
+                    if hasattr(key, 'vk'):
+                        self._pressed_keys.add(key.vk)
+                    if key == pynput_kb.Key.ctrl_l or key == pynput_kb.Key.ctrl_r:
+                        self._pressed_keys.add('ctrl')
+                    elif key == pynput_kb.Key.shift or key == pynput_kb.Key.shift_l or key == pynput_kb.Key.shift_r:
+                        self._pressed_keys.add('shift')
+                    elif hasattr(key, 'char') and key.char:
+                        self._pressed_keys.add(key.char.lower())
+                    
+                    # Check combos
+                    if 'ctrl' in self._pressed_keys and 'shift' in self._pressed_keys:
+                        if 's' in self._pressed_keys:
+                            self._pressed_keys.clear()
+                            QTimer.singleShot(0, self.full_capture)
+                        elif 'a' in self._pressed_keys:
+                            self._pressed_keys.clear()
+                            QTimer.singleShot(0, self.start_capture)
+                        elif 'q' in self._pressed_keys:
+                            self._pressed_keys.clear()
+                            QTimer.singleShot(0, self.quit)
+                except:
+                    pass
             
-            def on_activate_quit():
-                QTimer.singleShot(0, self.quit)
+            def on_release(key):
+                try:
+                    if hasattr(key, 'vk') and key.vk in self._pressed_keys:
+                        self._pressed_keys.discard(key.vk)
+                    if key == pynput_kb.Key.ctrl_l or key == pynput_kb.Key.ctrl_r:
+                        self._pressed_keys.discard('ctrl')
+                    elif key == pynput_kb.Key.shift or key == pynput_kb.Key.shift_l or key == pynput_kb.Key.shift_r:
+                        self._pressed_keys.discard('shift')
+                    elif hasattr(key, 'char') and key.char:
+                        self._pressed_keys.discard(key.char.lower())
+                except:
+                    pass
             
-            self._hotkey_listener = pynput_kb.GlobalHotKeys({
-                '<ctrl>+<shift>+s': on_activate_full,
-                '<ctrl>+<shift>+a': on_activate_region,
-                '<ctrl>+<shift>+q': on_activate_quit,
-            })
-            self._hotkey_listener.start()
-            print("[Hotkeys] Registered via pynput:")
+            self._key_listener = pynput_kb.Listener(on_press=on_press, on_release=on_release)
+            self._key_listener.start()
+            print("[Hotkeys] ✅ Registered via pynput Listener:")
             print("[Hotkeys]   Ctrl+Shift+S → Full screen capture")
-            print("[Hotkeys]   Ctrl+Shift+A → Region capture")
+            print("[Hotkeys]   Ctrl+Shift+A → Region capture") 
             print("[Hotkeys]   Ctrl+Shift+Q → Quit")
         except Exception as e:
-            print(f"[Hotkeys] pynput failed: {e}")
-            # Fallback to keyboard library
+            print(f"[Hotkeys] pynput failed: {e}, trying keyboard library...")
             try:
                 import keyboard
                 keyboard.add_hotkey('ctrl+shift+s', lambda: QTimer.singleShot(0, self.full_capture))
@@ -816,8 +843,8 @@ class SnapShotAI:
     
     def quit(self):
         try:
-            if hasattr(self, '_hotkey_listener'):
-                self._hotkey_listener.stop()
+            if hasattr(self, '_key_listener'):
+                self._key_listener.stop()
         except:
             pass
         self.tray.hide()
