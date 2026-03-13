@@ -272,9 +272,10 @@
         .feat-icon {
             width: 40px; height: 40px; border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 20px; margin-bottom: 20px;
+            margin-bottom: 20px;
             background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.1);
         }
+        .feat-icon svg { width: 20px; height: 20px; }
         .feat-cell h3 { font-size: 15px; font-weight: 500; margin-bottom: 8px; }
         .feat-cell p { font-size: 14px; line-height: 1.65; color: var(--text-tertiary); }
 
@@ -317,8 +318,11 @@
             pointer-events: none;
         }
         .callout-ghost {
-            font-size: 56px; margin-bottom: 24px; display: block;
+            margin-bottom: 24px; display: block;
             filter: drop-shadow(0 0 20px rgba(139,92,246,0.3));
+        }
+        .callout-ghost img {
+            width: 64px; height: 64px; border-radius: 14px;
         }
         .callout h2 {
             font-size: clamp(24px, 3vw, 36px); font-weight: 500;
@@ -494,7 +498,7 @@
                         </div>
                     </div>
                     <div class="demo-overlay">
-                        <div class="demo-overlay-header">👻 SnapShotAI</div>
+                        <div class="demo-overlay-header"><img src="/logo-256.png" alt="" style="width:14px;height:14px;border-radius:3px;"> SnapShotAI</div>
                         <div class="demo-overlay-text">
                             <strong>Bug found on line 8.</strong> <code>low = mid</code> should be <code>low = mid + 1</code> — without the +1, the loop runs forever when the target is greater than <code>arr[mid]</code>.
                         </div>
@@ -512,7 +516,7 @@
 <section class="section">
     <div class="container">
         <div class="callout reveal">
-            <span class="callout-ghost">👻</span>
+            <span class="callout-ghost"><img src="/logo-256.png" alt="SnapShotAI"></span>
             <h2>Invisible to screen sharing</h2>
             <p>The AI overlay is hidden from Zoom, Teams, Discord, and OBS. You see the answers — everyone else sees nothing. Study smarter, not louder.</p>
         </div>
@@ -530,32 +534,32 @@
         </div>
         <div class="feat-grid reveal">
             <div class="feat-cell">
-                <div class="feat-icon">🧠</div>
+                <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 1 7 7c0 3-2 5.5-4 7l-1 3H10l-1-3c-2-1.5-4-4-4-7a7 7 0 0 1 7-7z"/><path d="M10 19h4M11 22h2"/></svg></div>
                 <h3>AI-Powered Analysis</h3>
                 <p>Understands code, math, text, diagrams, and errors. Powered by state-of-the-art vision models.</p>
             </div>
             <div class="feat-cell">
-                <div class="feat-icon">💬</div>
+                <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
                 <h3>Follow-Up Questions</h3>
                 <p>Don't just get one answer. Ask deeper questions in a conversational thread.</p>
             </div>
             <div class="feat-cell">
-                <div class="feat-icon">👻</div>
+                <div class="feat-icon" style="background:rgba(139,92,246,0.12);border-color:rgba(139,92,246,0.2);"><img src="/logo-256.png" alt="" style="width:20px;height:20px;border-radius:4px;opacity:0.9;"></div>
                 <h3>Stealth Mode</h3>
                 <p>Completely invisible to screen capture. Zoom, Teams, OBS — they see nothing.</p>
             </div>
             <div class="feat-cell">
-                <div class="feat-icon">⚡</div>
+                <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
                 <h3>Instant Results</h3>
                 <p>Answers in under 3 seconds. No loading screens, no context switching.</p>
             </div>
             <div class="feat-cell">
-                <div class="feat-icon">📸</div>
+                <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
                 <h3>Full Screen or Region</h3>
                 <p>Capture your entire screen instantly, or drag to select a specific area.</p>
             </div>
             <div class="feat-cell">
-                <div class="feat-icon">🔒</div>
+                <div class="feat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
                 <h3>Privacy First</h3>
                 <p>Screenshots are processed and discarded. We never store your images.</p>
             </div>
@@ -608,10 +612,12 @@
         <p class="reveal">Download SnapShotAI. Free, lightweight, invisible.</p>
         <div class="hero-buttons reveal">
             <a href="https://github.com/emberaidevs-spec/snapshotai/releases/download/v1.1.1/SnapShotAI.exe" class="btn btn-primary">
-                ⊞ &nbsp;Download for Windows
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M0 2.3l6.5-.9v6.3H0V2.3zm7.3-1L16 0v7.7H7.3V1.3zM16 8.7l-.1 7.6-8.6-1.2V8.7H16zM6.5 15l-6.5-.9V8.7h6.5V15z"/></svg>
+                Download for Windows
             </a>
             <a href="https://github.com/emberaidevs-spec/snapshotai/releases/download/v1.1.1/SnapShotAI.dmg" class="btn btn-secondary">
-                🍎 &nbsp;Download for Mac
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                Download for Mac
             </a>
         </div>
         <p class="hero-note reveal" style="margin-top:20px">Works on Windows 10+ and macOS 12+</p>
