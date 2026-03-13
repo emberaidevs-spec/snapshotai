@@ -38,7 +38,7 @@ import keyboard
 # ===== Config =====
 APP_NAME = "SnapShotAI"
 APP_VERSION = "1.0.0"
-API_BASE = "https://snapshotai-beta.vercel.app"
+API_BASE = "http://5.78.191.207:8765"
 SUPABASE_URL = "https://xiwfuenqxyfzadggakip.supabase.co"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpd2Z1ZW5xeHlmemFkZ2dha2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzYxNDQsImV4cCI6MjA4ODkxMjE0NH0.leYWfPUg8NLIA3YcFEH5w_gbuVMLw-Z6OVu7_tme4QA"
 CONFIG_DIR = Path.home() / '.snapshotai'
@@ -302,7 +302,7 @@ class ResultOverlay(QWidget):
             QPushButton {{ background: rgba(139,92,246,0.12); border: none; border-radius: 14px; color: {PURPLE}; font-size: 13px; }}
             QPushButton:hover {{ background: rgba(139,92,246,0.25); }}
         """)
-        dash_btn.clicked.connect(lambda: webbrowser.open(f"{API_BASE}/dashboard"))
+        dash_btn.clicked.connect(lambda: webbrowser.open("https://snapshotai-beta.vercel.app/dashboard"))
         header.addWidget(dash_btn)
         
         close_btn = QPushButton("✕")
