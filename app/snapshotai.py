@@ -34,6 +34,42 @@ except ImportError:
     PYQT6 = False
 
 import keyboard
+import platform
+
+# ===== Stealth Mode: Hide from screen capture =====
+def make_window_stealth(widget):
+    """Make a window invisible to screen sharing (Zoom, Teams, OBS, etc.)"""
+    system = platform.system()
+    
+    if system == 'Windows':
+        try:
+            import ctypes
+            # WDA_EXCLUDEFROMCAPTURE = 0x00000011 (Windows 10 2004+)
+            hwnd = int(widget.winId())
+            ctypes.windll.user32.SetWindowDisplayAffinity(hwnd, 0x00000011)
+            print(f"[Stealth] Window hidden from screen capture (Windows)")
+        except Exception as e:
+            print(f"[Stealth] Windows stealth failed: {e}")
+            # Fallback: WDA_MONITOR (older Windows) 
+            try:
+                ctypes.windll.user32.SetWindowDisplayAffinity(hwnd, 0x00000001)
+                print(f"[Stealth] Fallback: WDA_MONITOR applied")
+            except:
+                pass
+    
+    elif system == 'Darwin':
+        try:
+            # macOS: set sharing type to none
+            from AppKit import NSApp
+            ns_window = widget.windowHandle()
+            if ns_window:
+                ns_window.setSharingType_(0)  # NSWindowSharingNone = 0
+                print(f"[Stealth] Window hidden from screen capture (macOS)")
+        except Exception as e:
+            print(f"[Stealth] macOS stealth failed: {e}")
+    
+    else:
+        print(f"[Stealth] Not supported on {system}")
 
 # ===== Config =====
 APP_NAME = "SnapShotAI"
@@ -363,6 +399,7 @@ class ResultOverlay(QWidget):
         self.response.setText("⏳ Analyzing screenshot...")
         self.status_label.setText("")
         self.show()
+        make_window_stealth(self)
         
         cursor = QCursor.pos()
         screen = QApplication.primaryScreen().geometry()
@@ -672,7 +709,11 @@ class SnapShotAI:
         if not self.token:
             QTimer.singleShot(0, self._show_login)
             return
-        QTimer.singleShot(0, self.selection.showFullScreen)
+        QTimer.singleShot(0, self._show_selection)
+    
+    def _show_selection(self):
+        self.selection.showFullScreen()
+        make_window_stealth(self.selection)
     
     def on_capture(self, rect):
         try:
@@ -690,6 +731,7 @@ class SnapShotAI:
         self.login.move((screen.width() - 400) // 2, (screen.height() - 520) // 2)
         self.login.show()
         self.login.raise_()
+        make_window_stealth(self.login)
     
     def on_login(self, token, email):
         self.token = token
