@@ -404,8 +404,7 @@ class ResultOverlay(QWidget):
         self.show()
         self.raise_()
         self.activateWindow()
-        # Stealth temporarily disabled for debugging
-        # make_window_stealth(self)
+        make_window_stealth(self)
         
         cursor = QCursor.pos()
         screen = QApplication.primaryScreen().geometry()
@@ -713,7 +712,6 @@ class SnapShotAI:
         self.tray.show()
     
     def start_capture(self):
-        print("[DEBUG] >>> start_capture() (region) triggered!")
         if not self.token:
             QTimer.singleShot(0, self._show_login)
             return
@@ -721,7 +719,6 @@ class SnapShotAI:
     
     def full_capture(self):
         """Capture entire screen — completely invisible, no overlay shown"""
-        print("[DEBUG] >>> full_capture() triggered!")
         if not self.token:
             QTimer.singleShot(0, self._show_login)
             return
