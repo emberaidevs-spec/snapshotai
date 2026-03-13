@@ -108,46 +108,39 @@
 
         /* ===== HERO ===== */
         .hero {
-            padding: 100px 0 40px;
-            text-align: center;
+            padding: 100px 0 0;
             position: relative;
         }
         .hero::before {
             content: '';
-            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            width: 800px; height: 600px;
-            background: radial-gradient(ellipse at center, rgba(139,92,246,0.08) 0%, transparent 70%);
+            position: absolute; top: 0; left: 0;
+            width: 600px; height: 400px;
+            background: radial-gradient(ellipse at top left, rgba(139,92,246,0.06) 0%, transparent 70%);
             pointer-events: none;
         }
-        .hero-badge {
-            display: inline-flex; align-items: center; gap: 8px;
-            padding: 5px 14px 5px 8px;
-            background: var(--surface-2); border: 1px solid var(--border);
-            border-radius: 100px; font-size: 12px; color: var(--text-secondary);
-            margin-bottom: 20px;
-        }
-        .hero-badge-dot {
-            width: 6px; height: 6px; background: #22c55e;
-            border-radius: 50%; animation: pulse-dot 2s infinite;
-        }
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+        .hero-top {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            margin-bottom: 48px;
         }
         .hero h1 {
-            font-size: clamp(36px, 5vw, 56px);
-            font-weight: 800; letter-spacing: -0.035em;
-            line-height: 1.1; margin-bottom: 14px;
+            font-size: clamp(40px, 5.5vw, 68px);
+            font-weight: 700; letter-spacing: -0.04em;
+            line-height: 1.05; max-width: 700px;
         }
         .hero h1 .gradient {
             background: linear-gradient(135deg, #c084fc, #818cf8, #60a5fa);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        .hero-sub {
-            font-size: 16px; color: var(--text-tertiary);
-            max-width: 500px; margin: 0 auto 28px; line-height: 1.7;
+        .hero-right {
+            display: flex; flex-direction: column; align-items: flex-end; gap: 16px;
+            padding-bottom: 8px;
         }
-        .hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .hero-sub {
+            font-size: 15px; color: var(--text-tertiary);
+            max-width: 340px; text-align: right; line-height: 1.6;
+        }
+        .hero-buttons { display: flex; gap: 10px; }
         
         .btn {
             display: inline-flex; align-items: center; gap: 8px;
@@ -175,12 +168,12 @@
             box-shadow: 0 8px 30px rgba(139,92,246,0.25);
         }
         .hero-note {
-            margin-top: 14px; font-size: 12px; color: var(--text-tertiary);
+            margin-top: 14px; font-size: 12px; color: var(--text-tertiary); text-align: center;
         }
 
         /* ===== PRODUCT DEMO ===== */
         .demo {
-            max-width: 1000px; margin: 48px auto 0; position: relative;
+            max-width: 1080px; margin: 0 auto; position: relative;
         }
         .demo::before {
             content: ''; position: absolute; inset: -40px;
@@ -198,7 +191,7 @@
         }
         .demo-dot { width: 10px; height: 10px; border-radius: 50%; }
         .d-red { background: #3c3c3c; } .d-yel { background: #3c3c3c; } .d-grn { background: #3c3c3c; }
-        .demo-body { padding: 28px; display: flex; gap: 24px; min-height: 320px; }
+        .demo-body { padding: 32px; display: flex; gap: 24px; min-height: 360px; }
         .demo-screen { flex: 1; }
         .demo-code {
             font-family: 'JetBrains Mono', monospace; font-size: 13px;
@@ -423,11 +416,12 @@
             .callout { padding: 48px 24px; }
             .nav-links { display: none; }
             .nav-hamburger { display: block; }
-            .hero { padding: 120px 0 60px; }
+            .hero { padding: 90px 0 0; }
+            .hero-top { flex-direction: column; align-items: flex-start; gap: 20px; }
+            .hero-right { align-items: flex-start; }
+            .hero-sub { text-align: left; max-width: 100%; }
             .section { padding: 80px 0; }
             .footer-inner { flex-direction: column; gap: 12px; }
-            .hero-buttons { flex-direction: column; align-items: center; }
-            .hero-buttons .btn { width: 100%; max-width: 280px; justify-content: center; }
         }
     </style>
 </head>
@@ -463,17 +457,15 @@
 <!-- Hero -->
 <section class="hero">
     <div class="container">
-        <div class="hero-badge reveal">
-            <span class="hero-badge-dot"></span>
-            Now available on Windows & Mac
+        <div class="hero-top">
+            <h1 class="reveal">Capture your screen.<br><span class="gradient">AI explains the rest.</span></h1>
+            <div class="hero-right reveal">
+                <p class="hero-sub">One hotkey. Instant AI analysis. Invisible to screen sharing.</p>
+                <div class="hero-buttons">
+                    <a href="#download" class="btn btn-primary" style="padding:10px 20px;font-size:13px;">Download free →</a>
+                </div>
+            </div>
         </div>
-        <h1 class="reveal">Capture your screen.<br><span class="gradient">AI explains the rest.</span></h1>
-        <p class="hero-sub reveal">One hotkey captures anything on screen. AI breaks it down in seconds — code, notes, diagrams, errors. Invisible to screen sharing.</p>
-        <div class="hero-buttons reveal">
-            <a href="#download" class="btn btn-primary">Download for free →</a>
-            <a href="#how" class="btn btn-secondary">See how it works</a>
-        </div>
-        <p class="hero-note reveal">Free forever · No credit card · Pro $5.99/mo</p>
 
         <!-- Demo -->
         <div class="demo reveal">
