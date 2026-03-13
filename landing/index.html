@@ -3,958 +3,730 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SnapShotAI — Screenshot it. Understand it. Instantly.</title>
-    <meta name="description" content="Press a hotkey, select anything on your screen, and let AI break it down. Code, notes, diagrams, errors — understood in seconds. Free for students.">
+    <title>SnapShotAI — AI-powered screen capture</title>
+    <meta name="description" content="Press a hotkey, capture anything on screen, get AI-powered answers instantly. Invisible to screen sharing. Built for students.">
     
-    <!-- Open Graph -->
-    <meta property="og:title" content="SnapShotAI — Screenshot it. Understand it. Instantly.">
-    <meta property="og:description" content="Press a hotkey, select anything on your screen, and let AI break it down. Code, notes, diagrams, errors — understood in seconds.">
+    <meta property="og:title" content="SnapShotAI — AI-powered screen capture">
+    <meta property="og:description" content="Capture anything on screen. Get instant AI answers. Invisible to screen sharing.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://snapshotai-beta.vercel.app">
     <meta property="og:image" content="https://snapshotai-beta.vercel.app/og.png">
-    
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SnapShotAI — Screenshot it. Understand it. Instantly.">
-    <meta name="twitter:description" content="AI-powered screen capture for students. Capture anything, understand everything.">
+    <meta name="twitter:title" content="SnapShotAI — AI-powered screen capture">
     
-    <!-- Favicon (inline SVG - purple lightning bolt) -->
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="apple-touch-icon" href="/logo-256.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg: #0a0a14;
-            --surface: #111127;
+            --bg: #09090b;
+            --surface: #0f0f13;
+            --surface-2: #16161c;
             --purple: #8b5cf6;
-            --purple-dark: #7c3aed;
+            --purple-hover: #7c3aed;
             --blue: #3b82f6;
-            --text: #ffffff;
-            --body: #a1a1aa;
-            --caption: #71717a;
+            --text: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --text-tertiary: #71717a;
             --border: rgba(255,255,255,0.06);
-            --glass-bg: rgba(17,17,39,0.6);
-            --glass-border: rgba(255,255,255,0.08);
+            --border-hover: rgba(255,255,255,0.12);
+            --glow: rgba(139,92,246,0.15);
         }
 
         html { scroll-behavior: smooth; }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg);
-            color: var(--body);
+            color: var(--text-secondary);
             line-height: 1.6;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(139,92,246,0.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(139,92,246,0.025) 1px, transparent 1px);
-            background-size: 64px 64px;
-            pointer-events: none;
-            z-index: 0;
-        }
+        .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+        h1, h2, h3, h4 { color: var(--text); line-height: 1.15; }
+        code { font-family: 'JetBrains Mono', monospace; }
 
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 24px;
-            position: relative;
-            z-index: 1;
-        }
-
-        main { position: relative; z-index: 1; }
-        h1, h2, h3, h4 { color: var(--text); }
-        code, .mono { font-family: 'JetBrains Mono', monospace; }
-
-        /* ========== NAV ========== */
+        /* ===== NAV ===== */
         nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            padding: 16px 0;
-            transition: background 0.3s, backdrop-filter 0.3s, border-color 0.3s;
-            border-bottom: 1px solid transparent;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            padding: 0;
+            transition: all 0.3s ease;
         }
         nav.scrolled {
-            background: rgba(10,10,20,0.82);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom-color: var(--border);
+            background: rgba(9,9,11,0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
         }
         .nav-inner {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            max-width: 1080px; margin: 0 auto; padding: 16px 24px;
+            display: flex; justify-content: space-between; align-items: center;
         }
         .nav-logo {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 15px; font-weight: 600; color: var(--text);
+            text-decoration: none; display: flex; align-items: center; gap: 10px;
         }
-        .nav-logo .icon {
-            width: 28px;
-            height: 28px;
-            background: linear-gradient(135deg, var(--purple), var(--blue));
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 32px;
-        }
+        .nav-logo img { width: 24px; height: 24px; border-radius: 6px; }
+        .nav-links { display: flex; align-items: center; gap: 8px; }
         .nav-links a {
-            color: var(--caption);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: color 0.2s;
+            color: var(--text-tertiary); text-decoration: none;
+            font-size: 13px; font-weight: 500; padding: 6px 12px;
+            border-radius: 6px; transition: color 0.2s;
         }
-        .nav-links a:hover { color: var(--text); }
+        .nav-links a:hover { color: var(--text-secondary); }
         .nav-cta {
-            padding: 10px 20px !important;
-            background: var(--purple) !important;
-            color: var(--text) !important;
-            border-radius: 10px !important;
-            font-weight: 600 !important;
-            transition: all 0.2s !important;
+            background: var(--text) !important; color: var(--bg) !important;
+            font-weight: 600 !important; padding: 7px 16px !important;
+            border-radius: 8px !important; font-size: 13px !important;
+            transition: opacity 0.2s !important;
         }
-        .nav-cta:hover {
-            background: var(--purple-dark) !important;
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(139,92,246,0.25);
-        }
+        .nav-cta:hover { opacity: 0.85; }
         .nav-hamburger {
-            display: none;
-            cursor: pointer;
-            color: var(--text);
-            font-size: 22px;
-            background: none;
-            border: none;
-            padding: 4px;
+            display: none; background: none; border: none;
+            color: var(--text); font-size: 20px; cursor: pointer; padding: 4px;
+        }
+        .nav-mobile {
+            display: none; position: fixed; top: 56px; left: 0; right: 0;
+            background: rgba(9,9,11,0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); padding: 16px 24px;
+            flex-direction: column; gap: 8px; z-index: 99;
+        }
+        .nav-mobile.open { display: flex; }
+        .nav-mobile a {
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 14px; padding: 10px 0;
         }
 
-        /* Mobile nav */
-        .nav-mobile-menu {
-            display: none;
-            position: fixed;
-            top: 60px;
-            left: 0;
-            right: 0;
-            background: rgba(10,10,20,0.95);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--border);
-            padding: 20px 24px;
-            flex-direction: column;
-            gap: 16px;
-            z-index: 99;
-        }
-        .nav-mobile-menu.open { display: flex; }
-        .nav-mobile-menu a {
-            color: var(--body);
-            text-decoration: none;
-            font-size: 16px;
-            font-weight: 500;
-            padding: 8px 0;
-        }
-
-        /* ========== HERO ========== */
+        /* ===== HERO ===== */
         .hero {
-            padding: 160px 0 80px;
+            padding: 160px 0 100px;
             text-align: center;
             position: relative;
         }
         .hero::before {
             content: '';
-            position: absolute;
-            top: 40%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 700px;
-            height: 700px;
-            background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 65%);
+            position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 800px; height: 600px;
+            background: radial-gradient(ellipse at center, rgba(139,92,246,0.08) 0%, transparent 70%);
             pointer-events: none;
         }
-        .hero h1 {
-            font-size: clamp(40px, 5.5vw, 64px);
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            line-height: 1.1;
-            margin-bottom: 22px;
-            position: relative;
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 16px 6px 8px;
+            background: var(--surface-2); border: 1px solid var(--border);
+            border-radius: 100px; font-size: 13px; color: var(--text-secondary);
+            margin-bottom: 32px;
         }
-        .gradient {
-            background: linear-gradient(135deg, var(--purple), var(--blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .hero-badge-dot {
+            width: 6px; height: 6px; background: #22c55e;
+            border-radius: 50%; animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+        }
+        .hero h1 {
+            font-size: clamp(42px, 6vw, 72px);
+            font-weight: 800; letter-spacing: -0.035em;
+            line-height: 1.05; margin-bottom: 20px;
+        }
+        .hero h1 .gradient {
+            background: linear-gradient(135deg, #c084fc, #818cf8, #60a5fa);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         .hero-sub {
-            font-size: 18px;
-            color: var(--body);
-            max-width: 580px;
-            margin: 0 auto 36px;
-            line-height: 1.7;
+            font-size: 17px; color: var(--text-tertiary);
+            max-width: 520px; margin: 0 auto 40px; line-height: 1.7;
         }
-        .hero-buttons {
-            display: flex;
-            gap: 14px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-        }
+        .hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        
         .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 14px 28px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            font-family: inherit;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 24px; border-radius: 10px; font-size: 14px;
+            font-weight: 600; font-family: inherit; text-decoration: none;
+            cursor: pointer; transition: all 0.15s ease; border: none;
         }
         .btn-primary {
-            background: var(--purple);
-            color: white;
+            background: var(--text); color: var(--bg);
         }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, var(--purple), var(--blue));
-            transform: translateY(-1px);
-            box-shadow: 0 8px 32px rgba(139,92,246,0.3);
+        .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+        .btn-secondary {
+            background: transparent; color: var(--text-secondary);
+            border: 1px solid var(--border);
         }
-        .btn-ghost {
-            background: transparent;
-            color: var(--text);
-            border: 1px solid var(--glass-border);
-        }
-        .btn-ghost:hover {
-            border-color: rgba(139,92,246,0.4);
-            background: rgba(139,92,246,0.05);
+        .btn-secondary:hover {
+            border-color: var(--border-hover); color: var(--text);
             transform: translateY(-1px);
         }
-        .btn-icon { font-size: 18px; }
+        .btn-purple {
+            background: var(--purple); color: white;
+        }
+        .btn-purple:hover {
+            background: var(--purple-hover); transform: translateY(-1px);
+            box-shadow: 0 8px 30px rgba(139,92,246,0.25);
+        }
         .hero-note {
-            font-size: 13px;
-            color: var(--caption);
+            margin-top: 20px; font-size: 13px; color: var(--text-tertiary);
         }
 
-        /* Hero mockup */
-        .hero-mockup {
-            max-width: 820px;
-            margin: 64px auto 0;
-            position: relative;
+        /* ===== PRODUCT DEMO ===== */
+        .demo {
+            max-width: 900px; margin: 80px auto 0; position: relative;
         }
-        .hero-mockup::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 130%;
-            height: 130%;
-            background: radial-gradient(ellipse, rgba(139,92,246,0.07) 0%, transparent 55%);
+        .demo::before {
+            content: ''; position: absolute; inset: -40px;
+            background: radial-gradient(ellipse at center, rgba(139,92,246,0.06) 0%, transparent 60%);
             pointer-events: none;
         }
-        .mockup-window {
-            background: var(--surface);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
-            position: relative;
+        .demo-window {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; overflow: hidden; position: relative;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.02), 0 20px 60px rgba(0,0,0,0.5);
         }
-        .mockup-titlebar {
-            padding: 12px 16px;
-            background: rgba(0,0,0,0.4);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .mockup-dot { width: 12px; height: 12px; border-radius: 50%; }
-        .dot-red { background: #ef4444; }
-        .dot-yellow { background: #eab308; }
-        .dot-green { background: #22c55e; }
-        .mockup-body {
-            padding: 28px;
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
-            min-height: 280px;
-        }
-        .mockup-screen { flex: 1; position: relative; }
-        .mockup-code {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12.5px;
-            line-height: 1.9;
-            color: var(--body);
-            padding: 20px;
-            background: rgba(0,0,0,0.35);
-            border-radius: 10px;
-            position: relative;
-            overflow: hidden;
-        }
-        .mockup-code .kw { color: #c084fc; }
-        .mockup-code .fn { color: #60a5fa; }
-        .mockup-code .str { color: #34d399; }
-        .mockup-code .cm { color: #525280; }
-        .mockup-code .num { color: #f59e0b; }
-        .mockup-selection {
-            position: absolute;
-            top: 32px;
-            left: 8px;
-            right: 8px;
-            bottom: 32px;
-            border: 2px solid var(--purple);
-            border-radius: 6px;
-            background: rgba(139,92,246,0.05);
-            animation: sel-pulse 2.5s ease-in-out infinite;
-        }
-        @keyframes sel-pulse {
-            0%, 100% { border-color: var(--purple); opacity: 0.6; }
-            50% { border-color: #a78bfa; opacity: 1; }
-        }
-        .mockup-overlay {
-            width: 270px;
-            flex-shrink: 0;
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            padding: 20px;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
-        }
-        .overlay-header {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--purple);
-            margin-bottom: 14px;
-        }
-        .overlay-text { font-size: 12.5px; line-height: 1.7; color: var(--body); }
-        .overlay-text strong { color: var(--text); font-weight: 600; }
-        .overlay-text code {
-            background: rgba(139,92,246,0.12);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 11.5px;
-            color: #c084fc;
-        }
-        .overlay-input {
-            margin-top: 16px;
-            padding: 10px 12px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 8px;
-            font-size: 11.5px;
-            color: var(--caption);
-            font-family: inherit;
-            width: 100%;
-        }
-
-        /* ========== TRUST BAR ========== */
-        .trust {
-            padding: 44px 0;
-            text-align: center;
-            border-top: 1px solid var(--border);
+        .demo-titlebar {
+            padding: 14px 16px; display: flex; align-items: center; gap: 8px;
             border-bottom: 1px solid var(--border);
         }
-        .trust p { font-size: 14px; color: var(--caption); letter-spacing: 0.01em; }
-
-        /* ========== SECTIONS ========== */
-        .section { padding: 110px 0; }
-        .section-header { text-align: center; margin-bottom: 56px; }
-        .section-header h2 {
-            font-size: clamp(28px, 3.5vw, 40px);
-            font-weight: 700;
-            letter-spacing: -0.01em;
-            margin-bottom: 12px;
+        .demo-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .d-red { background: #3c3c3c; } .d-yel { background: #3c3c3c; } .d-grn { background: #3c3c3c; }
+        .demo-body { padding: 24px; display: flex; gap: 20px; min-height: 260px; }
+        .demo-screen { flex: 1; }
+        .demo-code {
+            font-family: 'JetBrains Mono', monospace; font-size: 13px;
+            line-height: 2; color: var(--text-secondary); padding: 20px;
+            background: rgba(0,0,0,0.3); border-radius: 8px; position: relative;
         }
-        .section-header p {
-            font-size: 16px;
-            color: var(--caption);
-            max-width: 480px;
-            margin: 0 auto;
+        .demo-code .kw { color: #c084fc; } .demo-code .fn { color: #818cf8; }
+        .demo-code .str { color: #34d399; } .demo-code .cm { color: #4a4a5a; }
+        .demo-code .num { color: #fbbf24; }
+        .demo-sel {
+            position: absolute; top: 16px; left: 8px; right: 8px; bottom: 16px;
+            border: 1.5px solid rgba(139,92,246,0.5); border-radius: 4px;
+            background: rgba(139,92,246,0.03);
+            animation: sel-breathe 3s ease-in-out infinite;
         }
-
-        /* ========== GLASS CARD ========== */
-        .glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            transition: all 0.3s;
+        @keyframes sel-breathe {
+            0%, 100% { opacity: 0.5; } 50% { opacity: 1; }
         }
-        .glass:hover {
-            transform: translateY(-2px);
-            border-color: rgba(139,92,246,0.2);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+        .demo-overlay {
+            width: 260px; flex-shrink: 0;
+            background: var(--surface-2); border: 1px solid var(--border);
+            border-radius: 10px; padding: 18px;
         }
-
-        /* ========== HOW IT WORKS ========== */
-        .steps-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
+        .demo-overlay-header {
+            font-size: 12px; font-weight: 600; color: var(--purple);
+            margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
         }
-        .step-card { padding: 36px 28px; text-align: center; }
-        .step-num {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, var(--purple), var(--blue));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: 700;
-            color: white;
-            margin: 0 auto 20px;
+        .demo-overlay-text {
+            font-size: 13px; line-height: 1.7; color: var(--text-secondary);
         }
-        .step-icon { font-size: 36px; margin-bottom: 16px; }
-        .step-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
-        .step-card p { font-size: 14px; line-height: 1.7; }
-        .kbd {
-            display: inline-block;
-            padding: 3px 8px;
-            background: rgba(0,0,0,0.45);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-bottom: 2px solid rgba(255,255,255,0.07);
-            border-radius: 6px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11.5px;
-            color: var(--text);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
-            line-height: 1;
+        .demo-overlay-text strong { color: var(--text); }
+        .demo-overlay-text code {
+            background: rgba(139,92,246,0.1); padding: 2px 6px;
+            border-radius: 4px; font-size: 12px; color: #c084fc;
+        }
+        .demo-overlay-input {
+            margin-top: 14px; padding: 10px 12px;
+            background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+            border-radius: 6px; font-size: 12px; color: var(--text-tertiary);
+            font-family: inherit; width: 100%;
         }
 
-        /* ========== FEATURES ========== */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-        .feature-card { padding: 28px 24px; display: flex; flex-direction: column; gap: 12px; }
-        .feature-icon {
-            width: 44px;
-            height: 44px;
-            background: rgba(139,92,246,0.1);
-            border: 1px solid rgba(139,92,246,0.12);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-        .feature-card h3 { font-size: 16px; font-weight: 600; }
-        .feature-card p { font-size: 14px; line-height: 1.65; }
-
-        /* ========== USE CASES ========== */
-        .cases-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-        }
-        .case-card { padding: 28px 22px; text-align: center; }
-        .case-icon { font-size: 32px; margin-bottom: 14px; }
-        .case-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
-        .case-card p { font-size: 13px; line-height: 1.65; }
-
-        /* ========== PRICING ========== */
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 24px;
-            max-width: 720px;
-            margin: 0 auto;
-        }
-        .price-card { padding: 40px 32px; position: relative; }
-        .price-card.popular {
-            border-color: rgba(139,92,246,0.35);
-            box-shadow: 0 0 60px rgba(139,92,246,0.08), 0 0 120px rgba(139,92,246,0.04);
-        }
-        .price-badge {
-            position: absolute;
-            top: -13px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, var(--purple), var(--blue));
-            color: white;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 5px 16px;
-            border-radius: 100px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-        .price-card h3 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
-        .price-amount {
-            font-size: 52px;
-            font-weight: 700;
-            color: var(--text);
-            margin: 20px 0 4px;
-            letter-spacing: -0.02em;
-        }
-        .price-amount span { font-size: 16px; font-weight: 500; color: var(--caption); }
-        .price-sub { font-size: 14px; color: var(--caption); margin-bottom: 28px; }
-        .price-features { list-style: none; margin-bottom: 32px; }
-        .price-features li {
-            padding: 9px 0;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .price-features li::before { content: '✓'; color: var(--purple); font-weight: 700; }
-        .price-card .btn { width: 100%; justify-content: center; }
-        .pricing-note {
-            text-align: center;
-            margin-top: 24px;
-            font-size: 13px;
-            color: var(--caption);
+        /* ===== DIVIDER ===== */
+        .divider {
+            height: 1px; background: var(--border);
+            max-width: 1080px; margin: 0 auto;
         }
 
-        /* ========== CTA ========== */
-        .cta-section {
-            padding: 100px 0 120px;
-            text-align: center;
+        /* ===== SECTIONS ===== */
+        .section { padding: 120px 0; }
+        .section-label {
+            font-size: 13px; font-weight: 600; color: var(--purple);
+            text-transform: uppercase; letter-spacing: 0.05em;
+            margin-bottom: 16px;
+        }
+        .section-title {
+            font-size: clamp(30px, 4vw, 44px); font-weight: 700;
+            letter-spacing: -0.025em; margin-bottom: 16px;
+        }
+        .section-desc {
+            font-size: 16px; color: var(--text-tertiary);
+            max-width: 500px; line-height: 1.7;
+        }
+        .section-header { margin-bottom: 64px; }
+        .section-header-center { text-align: center; }
+        .section-header-center .section-desc { margin: 0 auto; }
+
+        /* ===== FEATURE GRID (Linear-style) ===== */
+        .feat-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+            background: var(--border); border-radius: 12px; overflow: hidden;
+        }
+        .feat-cell {
+            background: var(--bg); padding: 40px 32px;
+            transition: background 0.3s ease;
+        }
+        .feat-cell:hover { background: var(--surface); }
+        .feat-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; margin-bottom: 20px;
+            background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.1);
+        }
+        .feat-cell h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+        .feat-cell p { font-size: 14px; line-height: 1.65; color: var(--text-tertiary); }
+
+        /* ===== STEPS ===== */
+        .steps { display: flex; flex-direction: column; gap: 0; }
+        .step {
+            display: flex; align-items: flex-start; gap: 32px;
+            padding: 40px 0; border-bottom: 1px solid var(--border);
             position: relative;
         }
-        .cta-section::before {
-            content: '';
-            position: absolute;
-            bottom: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 600px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 65%);
+        .step:last-child { border-bottom: none; }
+        .step-num {
+            font-size: 64px; font-weight: 800; color: var(--surface-2);
+            line-height: 1; min-width: 80px;
+            background: linear-gradient(180deg, rgba(139,92,246,0.15) 0%, transparent 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .step-content h3 {
+            font-size: 20px; font-weight: 600; margin-bottom: 8px;
+        }
+        .step-content p { font-size: 15px; line-height: 1.7; }
+        .kbd {
+            display: inline-block; padding: 2px 7px;
+            background: var(--surface-2); border: 1px solid var(--border);
+            border-radius: 5px; font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; color: var(--text-secondary);
+        }
+
+        /* ===== STEALTH CALLOUT ===== */
+        .callout {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 16px; padding: 64px; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .callout::before {
+            content: ''; position: absolute; top: 0; left: 50%;
+            transform: translateX(-50%); width: 400px; height: 200px;
+            background: radial-gradient(ellipse, rgba(139,92,246,0.1) 0%, transparent 70%);
             pointer-events: none;
         }
-        .cta-section h2 {
-            font-size: clamp(28px, 3.5vw, 40px);
-            font-weight: 700;
-            margin-bottom: 14px;
+        .callout-ghost {
+            font-size: 56px; margin-bottom: 24px; display: block;
+            filter: drop-shadow(0 0 20px rgba(139,92,246,0.3));
+        }
+        .callout h2 {
+            font-size: clamp(24px, 3vw, 36px); font-weight: 700;
+            margin-bottom: 16px; letter-spacing: -0.02em;
+        }
+        .callout p {
+            font-size: 16px; color: var(--text-tertiary);
+            max-width: 460px; margin: 0 auto; line-height: 1.7;
+        }
+
+        /* ===== PRICING ===== */
+        .price-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 24px; max-width: 680px; margin: 0 auto;
+        }
+        .price-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 36px 28px;
+        }
+        .price-card.featured {
+            border-color: rgba(139,92,246,0.3);
+            box-shadow: 0 0 40px rgba(139,92,246,0.06);
             position: relative;
         }
-        .cta-section > .container > p {
-            color: var(--caption);
-            font-size: 16px;
-            margin-bottom: 32px;
+        .price-tag {
+            position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+            background: var(--purple); color: white; font-size: 11px;
+            font-weight: 700; padding: 4px 14px; border-radius: 100px;
+            letter-spacing: 0.03em;
         }
+        .price-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+        .price-card .price {
+            font-size: 48px; font-weight: 800; color: var(--text);
+            margin: 16px 0 4px; letter-spacing: -0.03em;
+        }
+        .price-card .price span { font-size: 16px; font-weight: 500; color: var(--text-tertiary); }
+        .price-card .price-desc { font-size: 14px; color: var(--text-tertiary); margin-bottom: 24px; }
+        .price-list { list-style: none; margin-bottom: 28px; }
+        .price-list li {
+            padding: 8px 0; font-size: 14px; color: var(--text-secondary);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .price-list li::before {
+            content: '✓'; color: var(--purple); font-weight: 700; font-size: 13px;
+        }
+        .price-card .btn { width: 100%; justify-content: center; }
 
-        /* ========== FOOTER ========== */
+        /* ===== FINAL CTA ===== */
+        .cta {
+            padding: 120px 0 140px; text-align: center; position: relative;
+        }
+        .cta::before {
+            content: ''; position: absolute; bottom: 20%; left: 50%;
+            transform: translateX(-50%); width: 600px; height: 400px;
+            background: radial-gradient(ellipse, rgba(139,92,246,0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .cta h2 {
+            font-size: clamp(30px, 4vw, 48px); font-weight: 800;
+            letter-spacing: -0.03em; margin-bottom: 16px;
+        }
+        .cta p { font-size: 16px; color: var(--text-tertiary); margin-bottom: 36px; }
+
+        /* ===== FOOTER ===== */
         footer {
-            border-top: 1px solid var(--border);
-            padding: 28px 0;
+            border-top: 1px solid var(--border); padding: 24px 0;
         }
         .footer-inner {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        footer p { font-size: 13px; color: var(--caption); }
+        footer p { font-size: 13px; color: var(--text-tertiary); }
         .footer-links { display: flex; gap: 24px; }
         .footer-links a {
-            font-size: 13px;
-            color: var(--caption);
-            text-decoration: none;
-            transition: color 0.2s;
+            font-size: 13px; color: var(--text-tertiary);
+            text-decoration: none; transition: color 0.2s;
         }
-        .footer-links a:hover { color: var(--body); }
+        .footer-links a:hover { color: var(--text-secondary); }
 
-        /* ========== ANIMATIONS ========== */
+        /* ===== ANIMATIONS ===== */
         .reveal {
-            opacity: 0;
-            transform: translateY(24px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
+            opacity: 0; transform: translateY(20px);
+            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .reveal.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
 
-        /* ========== RESPONSIVE ========== */
-        @media (max-width: 900px) {
-            .steps-grid { grid-template-columns: 1fr; gap: 16px; }
-            .features-grid { grid-template-columns: 1fr 1fr; }
-            .cases-grid { grid-template-columns: 1fr 1fr; }
-            .mockup-body { flex-direction: column; }
-            .mockup-overlay { width: 100%; }
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .feat-grid { grid-template-columns: 1fr; }
+            .demo-body { flex-direction: column; }
+            .demo-overlay { width: 100%; }
+            .step { flex-direction: column; gap: 12px; }
+            .step-num { font-size: 48px; min-width: auto; }
+            .price-grid { grid-template-columns: 1fr; }
+            .callout { padding: 48px 24px; }
             .nav-links { display: none; }
             .nav-hamburger { display: block; }
-            .footer-inner { flex-direction: column; gap: 12px; }
-        }
-        @media (max-width: 600px) {
-            .features-grid { grid-template-columns: 1fr; }
-            .cases-grid { grid-template-columns: 1fr; }
-            .pricing-grid { grid-template-columns: 1fr; }
             .hero { padding: 120px 0 60px; }
-            .hero-buttons { flex-direction: column; align-items: center; }
-            .hero-buttons .btn { width: 100%; max-width: 300px; justify-content: center; }
             .section { padding: 80px 0; }
-            .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
+            .footer-inner { flex-direction: column; gap: 12px; }
+            .hero-buttons { flex-direction: column; align-items: center; }
+            .hero-buttons .btn { width: 100%; max-width: 280px; justify-content: center; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Nav -->
-    <nav id="nav" role="navigation" aria-label="Main navigation">
-        <div class="nav-inner">
-            <a href="#" class="nav-logo" aria-label="SnapShotAI home">
-                <img src="/logo-256.png" alt="SnapShotAI" style="width:28px;height:28px;border-radius:6px;">
-                SnapShotAI
-            </a>
-            <div class="nav-links" id="navLinks">
-                <a href="#how">How It Works</a>
-                <a href="#features">Features</a>
-                <a href="#pricing">Pricing</a>
-                <a href="/dashboard" class="nav-cta" style="background:transparent !important;border:1px solid rgba(139,92,246,0.3) !important;">Dashboard</a>
-                <a href="#download" class="nav-cta">Download Free</a>
-            </div>
-            <button class="nav-hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">☰</button>
+<!-- Nav -->
+<nav id="nav">
+    <div class="nav-inner">
+        <a href="#" class="nav-logo">
+            <img src="/logo-256.png" alt="SnapShotAI">
+            SnapShotAI
+        </a>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#how">How it works</a>
+            <a href="#pricing">Pricing</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="#download" class="nav-cta">Download</a>
         </div>
-    </nav>
-
-    <!-- Mobile menu -->
-    <div class="nav-mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
-        <a href="#how">How It Works</a>
-        <a href="#features">Features</a>
-        <a href="#pricing">Pricing</a>
-        <a href="/dashboard">Dashboard</a>
-        <a href="#download">Download Free</a>
+        <button class="nav-hamburger" id="hamburger" aria-label="Menu">☰</button>
     </div>
+</nav>
+<div class="nav-mobile" id="mobileMenu">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="#download">Download</a>
+</div>
 
-    <main>
-        <!-- Hero -->
-        <section class="hero" aria-label="Hero">
-            <div class="container">
-                <h1 class="reveal">Screenshot it.<br><span class="gradient">Understand it. Instantly.</span></h1>
-                <p class="hero-sub reveal">Press a hotkey, select anything on your screen, and let AI break it down — code, notes, diagrams, error messages, anything.</p>
-                <div class="hero-buttons reveal">
-                    <a href="#download" class="btn btn-primary" role="button">
-                        <span class="btn-icon" aria-hidden="true">⊞</span> Download for Windows
-                    </a>
-                    <a href="#download" class="btn btn-ghost" role="button">
-                        <span class="btn-icon" aria-hidden="true">🍎</span> Download for Mac
-                    </a>
-                </div>
-                <p class="hero-note reveal">Free forever · No account required · Pro starts at $5.99/mo</p>
+<main>
 
-                <!-- Mockup -->
-                <div class="hero-mockup reveal" aria-label="Product demonstration">
-                    <div class="mockup-window">
-                        <div class="mockup-titlebar" aria-hidden="true">
-                            <div class="mockup-dot dot-red"></div>
-                            <div class="mockup-dot dot-yellow"></div>
-                            <div class="mockup-dot dot-green"></div>
-                        </div>
-                        <div class="mockup-body">
-                            <div class="mockup-screen">
-                                <div class="mockup-code" aria-label="Example code with a bug">
-                                    <div class="mockup-selection" aria-hidden="true"></div>
-                                    <span class="kw">def</span> <span class="fn">binary_search</span>(arr, target):<br>
-                                    &nbsp;&nbsp;low, high = <span class="num">0</span>, <span class="fn">len</span>(arr) - <span class="num">1</span><br>
-                                    &nbsp;&nbsp;<span class="kw">while</span> low &lt;= high:<br>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;mid = (low + high) // <span class="num">2</span><br>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> arr[mid] == target:<br>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> mid<br>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">elif</span> arr[mid] &lt; target:<br>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;low = mid <span class="cm"># ← Bug here</span><br>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">else</span>:<br>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;high = mid - <span class="num">1</span><br>
-                                    &nbsp;&nbsp;<span class="kw">return</span> -<span class="num">1</span>
-                                </div>
-                            </div>
-                            <div class="mockup-overlay">
-                                <div class="overlay-header">📸 SnapShotAI</div>
-                                <div class="overlay-text">
-                                    <strong>This is a binary search function</strong> with a bug on line 8.
-                                    <code>low = mid</code> should be <code>low = mid + 1</code> — without it,
-                                    the loop can run forever when the target is greater than <code>arr[mid]</code>.
-                                </div>
-                                <div class="overlay-input" aria-hidden="true">Ask a follow-up question...</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Trust Bar -->
-        <div class="trust reveal" aria-label="Social proof">
-            <div class="container">
-                <p>Join thousands of students studying smarter at universities everywhere</p>
-            </div>
+<!-- Hero -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-badge reveal">
+            <span class="hero-badge-dot"></span>
+            Now available on Windows & Mac
         </div>
+        <h1 class="reveal">Capture your screen.<br><span class="gradient">AI explains the rest.</span></h1>
+        <p class="hero-sub reveal">One hotkey captures anything on screen. AI breaks it down in seconds — code, notes, diagrams, errors. Invisible to screen sharing.</p>
+        <div class="hero-buttons reveal">
+            <a href="#download" class="btn btn-primary">Download for free →</a>
+            <a href="#how" class="btn btn-secondary">See how it works</a>
+        </div>
+        <p class="hero-note reveal">Free forever · No credit card · Pro $5.99/mo</p>
 
-        <!-- How It Works -->
-        <section class="section" id="how" aria-label="How it works">
-            <div class="container">
-                <div class="section-header reveal">
-                    <h2>Three seconds. That's all it takes.</h2>
-                    <p>No setup. No switching windows. Just capture and understand.</p>
+        <!-- Demo -->
+        <div class="demo reveal">
+            <div class="demo-window">
+                <div class="demo-titlebar">
+                    <div class="demo-dot d-red"></div>
+                    <div class="demo-dot d-yel"></div>
+                    <div class="demo-dot d-grn"></div>
                 </div>
-                <div class="steps-grid">
-                    <div class="step-card glass reveal" data-delay="0">
-                        <div class="step-num" aria-hidden="true">1</div>
-                        <div class="step-icon" aria-hidden="true">⌨️</div>
-                        <h3>Press the hotkey</h3>
-                        <p>Hit <span class="kbd">Ctrl</span> + <span class="kbd">Shift</span> + <span class="kbd">S</span> from anywhere. On Mac, use <span class="kbd">⌘</span> + <span class="kbd">Shift</span> + <span class="kbd">S</span>. Always ready in your system tray.</p>
+                <div class="demo-body">
+                    <div class="demo-screen">
+                        <div class="demo-code">
+                            <div class="demo-sel"></div>
+                            <span class="kw">def</span> <span class="fn">binary_search</span>(arr, target):<br>
+                            &nbsp;&nbsp;low, high = <span class="num">0</span>, <span class="fn">len</span>(arr) - <span class="num">1</span><br>
+                            &nbsp;&nbsp;<span class="kw">while</span> low &lt;= high:<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;mid = (low + high) // <span class="num">2</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> arr[mid] == target:<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> mid<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">elif</span> arr[mid] &lt; target:<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;low = mid <span class="cm"># ← bug</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">else</span>:<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;high = mid - <span class="num">1</span><br>
+                            &nbsp;&nbsp;<span class="kw">return</span> -<span class="num">1</span>
+                        </div>
                     </div>
-                    <div class="step-card glass reveal" data-delay="100">
-                        <div class="step-num" aria-hidden="true">2</div>
-                        <div class="step-icon" aria-hidden="true">🎯</div>
-                        <h3>Select anything</h3>
-                        <p>Drag to capture any area — code, a textbook paragraph, an error message, a diagram, a formula. Whatever's on screen.</p>
+                    <div class="demo-overlay">
+                        <div class="demo-overlay-header">👻 SnapShotAI</div>
+                        <div class="demo-overlay-text">
+                            <strong>Bug found on line 8.</strong> <code>low = mid</code> should be <code>low = mid + 1</code> — without the +1, the loop runs forever when the target is greater than <code>arr[mid]</code>.
+                        </div>
+                        <div class="demo-overlay-input">Ask a follow-up…</div>
                     </div>
-                    <div class="step-card glass reveal" data-delay="200">
-                        <div class="step-num" aria-hidden="true">3</div>
-                        <div class="step-icon" aria-hidden="true">✨</div>
-                        <h3>Get instant answers</h3>
-                        <p>AI analyzes your capture in seconds. Ask follow-ups right in the overlay. Like having a tutor on call 24/7.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Features -->
-        <section class="section" id="features" aria-label="Features">
-            <div class="container">
-                <div class="section-header reveal">
-                    <h2>Everything you need, nothing you don't.</h2>
-                    <p>Powerful features, zero bloat.</p>
-                </div>
-                <div class="features-grid">
-                    <div class="feature-card glass reveal" data-delay="0">
-                        <div class="feature-icon" aria-hidden="true">🧠</div>
-                        <h3>AI-Powered Analysis</h3>
-                        <p>Understands code, math, text, diagrams, and error messages out of the box.</p>
-                    </div>
-                    <div class="feature-card glass reveal" data-delay="100">
-                        <div class="feature-icon" aria-hidden="true">💬</div>
-                        <h3>Follow-Up Questions</h3>
-                        <p>Don't just get one answer. Ask deeper questions in a conversational thread.</p>
-                    </div>
-                    <div class="feature-card glass reveal" data-delay="200">
-                        <div class="feature-icon" aria-hidden="true">👻</div>
-                        <h3>Invisible by Design</h3>
-                        <p>Runs silently in your system tray. Zero distraction until you need it.</p>
-                    </div>
-                    <div class="feature-card glass reveal" data-delay="0">
-                        <div class="feature-icon" aria-hidden="true">⚡</div>
-                        <h3>Lightning Fast</h3>
-                        <p>Results in under 2 seconds. No loading screens, no context switching.</p>
-                    </div>
-                    <div class="feature-card glass reveal" data-delay="100">
-                        <div class="feature-icon" aria-hidden="true">🖥️</div>
-                        <h3>Works Everywhere</h3>
-                        <p>Capture from any app — VS Code, Chrome, PDFs, Zoom lectures, anything on screen.</p>
-                    </div>
-                    <div class="feature-card glass reveal" data-delay="200">
-                        <div class="feature-icon" aria-hidden="true">🔒</div>
-                        <h3>Privacy First</h3>
-                        <p>Captures are processed and discarded. We never store your screenshots.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Use Cases -->
-        <section class="section" aria-label="Use cases">
-            <div class="container">
-                <div class="section-header reveal">
-                    <h2>Built for how you actually study.</h2>
-                    <p>Real scenarios, real help.</p>
-                </div>
-                <div class="cases-grid">
-                    <div class="case-card glass reveal" data-delay="0">
-                        <div class="case-icon" aria-hidden="true">🐛</div>
-                        <h3>Debugging Code</h3>
-                        <p>Stuck on an error at 2am? Capture it and get a fix in seconds.</p>
-                    </div>
-                    <div class="case-card glass reveal" data-delay="100">
-                        <div class="case-icon" aria-hidden="true">📖</div>
-                        <h3>Dense Notes</h3>
-                        <p>Screenshot a confusing textbook paragraph and get a plain-English breakdown.</p>
-                    </div>
-                    <div class="case-card glass reveal" data-delay="200">
-                        <div class="case-icon" aria-hidden="true">📊</div>
-                        <h3>Diagrams & Charts</h3>
-                        <p>Capture a circuit diagram or UML chart and ask AI to walk you through it.</p>
-                    </div>
-                    <div class="case-card glass reveal" data-delay="300">
-                        <div class="case-icon" aria-hidden="true">📐</div>
-                        <h3>Homework Help</h3>
-                        <p>Snap a problem set question, get step-by-step guidance without leaving your desk.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Pricing -->
-        <section class="section" id="pricing" aria-label="Pricing">
-            <div class="container">
-                <div class="section-header reveal">
-                    <h2>Start free. Upgrade when you're hooked.</h2>
-                    <p>No credit card required. Cancel anytime.</p>
-                </div>
-                <div class="pricing-grid">
-                    <div class="price-card glass reveal" data-delay="0">
-                        <h3>Free</h3>
-                        <div class="price-amount">$0</div>
-                        <div class="price-sub">Forever free</div>
-                        <ul class="price-features">
-                            <li>15 captures per day</li>
-                            <li>AI-powered analysis</li>
-                            <li>Follow-up questions</li>
-                            <li>Windows + Mac</li>
-                        </ul>
-                        <a href="#download" class="btn btn-ghost">Download Free</a>
-                    </div>
-                    <div class="price-card glass popular reveal" data-delay="100">
-                        <div class="price-badge">✨ Most Popular</div>
-                        <h3>Pro</h3>
-                        <div class="price-amount">$5.99<span>/mo</span></div>
-                        <div class="price-sub">For power users</div>
-                        <ul class="price-features">
-                            <li>Unlimited captures</li>
-                            <li>Priority AI responses</li>
-                            <li>Capture history & search</li>
-                            <li>Windows + Mac</li>
-                            <li>Early access to new features</li>
-                        </ul>
-                        <a href="#download" class="btn btn-primary">Go Pro</a>
-                    </div>
-                </div>
-                <p class="pricing-note reveal">Cancel anytime. Student discounts coming soon.</p>
-            </div>
-        </section>
-
-        <!-- Final CTA -->
-        <section class="cta-section" id="download" aria-label="Download">
-            <div class="container">
-                <h2 class="reveal">Stop copying and pasting into ChatGPT.</h2>
-                <p class="reveal">Download SnapShotAI in 30 seconds. Free, lightweight, and private.</p>
-                <div class="hero-buttons reveal">
-                    <a href="https://github.com/emberaidevs-spec/snapshotai/releases/download/v1.1.1/SnapShotAI.exe" class="btn btn-primary" role="button">
-                        <span class="btn-icon" aria-hidden="true">⊞</span> Download for Windows
-                    </a>
-                    <a href="https://github.com/emberaidevs-spec/snapshotai/releases/download/v1.1.1/SnapShotAI.dmg" class="btn btn-ghost" role="button">
-                        <span class="btn-icon" aria-hidden="true">🍎</span> Download for Mac
-                    </a>
-                </div>
-                <p class="hero-note reveal" style="margin-top: 16px;">Free · Works on Windows 10+ and macOS 12+</p>
-            </div>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer role="contentinfo">
-        <div class="container">
-            <div class="footer-inner">
-                <p>© 2026 SnapShotAI</p>
-                <div class="footer-links">
-                    <a href="https://twitter.com/EmberdevAi" target="_blank" rel="noopener">Twitter</a>
-                    <a href="https://discord.gg/" target="_blank" rel="noopener">Discord</a>
-                    <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms</a>
                 </div>
             </div>
         </div>
-    </footer>
+    </div>
+</section>
 
-    <!-- Supabase Auth Handler -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // ===== Nav scroll effect =====
-        const nav = document.getElementById('nav');
-        window.addEventListener('scroll', () => {
-            nav.classList.toggle('scrolled', window.scrollY > 40);
-        }, { passive: true });
+<div class="divider"></div>
 
-        // ===== Mobile menu =====
-        const hamburger = document.getElementById('hamburger');
-        const mobileMenu = document.getElementById('mobileMenu');
-        hamburger.addEventListener('click', () => {
-            const open = mobileMenu.classList.toggle('open');
-            hamburger.setAttribute('aria-expanded', open);
-            hamburger.textContent = open ? '✕' : '☰';
+<!-- Stealth Callout -->
+<section class="section">
+    <div class="container">
+        <div class="callout reveal">
+            <span class="callout-ghost">👻</span>
+            <h2>Invisible to screen sharing</h2>
+            <p>The AI overlay is hidden from Zoom, Teams, Discord, and OBS. You see the answers — everyone else sees nothing. Study smarter, not louder.</p>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Features -->
+<section class="section" id="features">
+    <div class="container">
+        <div class="section-header section-header-center reveal">
+            <div class="section-label">Features</div>
+            <h2 class="section-title">Everything you need,<br>nothing you don't</h2>
+        </div>
+        <div class="feat-grid reveal">
+            <div class="feat-cell">
+                <div class="feat-icon">🧠</div>
+                <h3>AI-Powered Analysis</h3>
+                <p>Understands code, math, text, diagrams, and errors. Powered by state-of-the-art vision models.</p>
+            </div>
+            <div class="feat-cell">
+                <div class="feat-icon">💬</div>
+                <h3>Follow-Up Questions</h3>
+                <p>Don't just get one answer. Ask deeper questions in a conversational thread.</p>
+            </div>
+            <div class="feat-cell">
+                <div class="feat-icon">👻</div>
+                <h3>Stealth Mode</h3>
+                <p>Completely invisible to screen capture. Zoom, Teams, OBS — they see nothing.</p>
+            </div>
+            <div class="feat-cell">
+                <div class="feat-icon">⚡</div>
+                <h3>Instant Results</h3>
+                <p>Answers in under 3 seconds. No loading screens, no context switching.</p>
+            </div>
+            <div class="feat-cell">
+                <div class="feat-icon">📸</div>
+                <h3>Full Screen or Region</h3>
+                <p>Capture your entire screen instantly, or drag to select a specific area.</p>
+            </div>
+            <div class="feat-cell">
+                <div class="feat-icon">🔒</div>
+                <h3>Privacy First</h3>
+                <p>Screenshots are processed and discarded. We never store your images.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- How It Works -->
+<section class="section" id="how">
+    <div class="container">
+        <div class="section-header reveal">
+            <div class="section-label">How it works</div>
+            <h2 class="section-title">Three seconds.<br>That's all it takes.</h2>
+            <p class="section-desc">No setup. No switching windows. No copying into ChatGPT. Just capture and understand.</p>
+        </div>
+        <div class="steps">
+            <div class="step reveal">
+                <div class="step-num">01</div>
+                <div class="step-content">
+                    <h3>Press the hotkey</h3>
+                    <p>Hit <span class="kbd">Ctrl</span> <span class="kbd">Shift</span> <span class="kbd">S</span> from anywhere. Full screen capture, completely invisible. Or use <span class="kbd">Ctrl</span> <span class="kbd">Shift</span> <span class="kbd">A</span> to select a region.</p>
+                </div>
+            </div>
+            <div class="step reveal">
+                <div class="step-num">02</div>
+                <div class="step-content">
+                    <h3>AI analyzes your capture</h3>
+                    <p>Our vision model reads everything — code, text, diagrams, formulas, error messages. It understands context, not just characters.</p>
+                </div>
+            </div>
+            <div class="step reveal">
+                <div class="step-num">03</div>
+                <div class="step-content">
+                    <h3>Get instant answers</h3>
+                    <p>A clean overlay appears with the breakdown. Ask follow-up questions right there. Like having a tutor on call 24/7.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Pricing -->
+<section class="section" id="pricing">
+    <div class="container">
+        <div class="section-header section-header-center reveal">
+            <div class="section-label">Pricing</div>
+            <h2 class="section-title">Start free.<br>Upgrade when you're hooked.</h2>
+            <p class="section-desc">No credit card required. Cancel anytime.</p>
+        </div>
+        <div class="price-grid">
+            <div class="price-card reveal">
+                <h3>Free</h3>
+                <div class="price">$0</div>
+                <div class="price-desc">Forever free</div>
+                <ul class="price-list">
+                    <li>15 captures per day</li>
+                    <li>AI-powered analysis</li>
+                    <li>Follow-up questions</li>
+                    <li>Windows + Mac</li>
+                </ul>
+                <a href="#download" class="btn btn-secondary">Download free</a>
+            </div>
+            <div class="price-card featured reveal">
+                <div class="price-tag">Popular</div>
+                <h3>Pro</h3>
+                <div class="price">$5.99<span>/mo</span></div>
+                <div class="price-desc">For power users</div>
+                <ul class="price-list">
+                    <li>Unlimited captures</li>
+                    <li>Priority AI responses</li>
+                    <li>Capture history</li>
+                    <li>Windows + Mac</li>
+                    <li>Early access to features</li>
+                </ul>
+                <a href="#download" class="btn btn-purple">Go Pro</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CTA -->
+<section class="cta" id="download">
+    <div class="container">
+        <h2 class="reveal">Stop copying and pasting<br>into ChatGPT.</h2>
+        <p class="reveal">Download SnapShotAI. Free, lightweight, invisible.</p>
+        <div class="hero-buttons reveal">
+            <a href="https://github.com/emberaidevs-spec/snapshotai/releases/download/v1.1.1/SnapShotAI.exe" class="btn btn-primary">
+                ⊞ &nbsp;Download for Windows
+            </a>
+            <a href="https://github.com/emberaidevs-spec/snapshotai/releases/download/v1.1.1/SnapShotAI.dmg" class="btn btn-secondary">
+                🍎 &nbsp;Download for Mac
+            </a>
+        </div>
+        <p class="hero-note reveal" style="margin-top:20px">Works on Windows 10+ and macOS 12+</p>
+    </div>
+</section>
+
+</main>
+
+<footer>
+    <div class="container">
+        <div class="footer-inner">
+            <p>© 2026 SnapShotAI</p>
+            <div class="footer-links">
+                <a href="https://twitter.com/EmberdevAi">Twitter</a>
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // Nav scroll
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+        nav.classList.toggle('scrolled', window.scrollY > 20);
+    }, { passive: true });
+
+    // Mobile menu
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    hamburger.addEventListener('click', () => {
+        const open = mobileMenu.classList.toggle('open');
+        hamburger.textContent = open ? '✕' : '☰';
+    });
+    mobileMenu.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+            mobileMenu.classList.remove('open');
+            hamburger.textContent = '☰';
         });
-        // Close on link click
-        mobileMenu.querySelectorAll('a').forEach(a => {
-            a.addEventListener('click', () => {
-                mobileMenu.classList.remove('open');
-                hamburger.setAttribute('aria-expanded', 'false');
-                hamburger.textContent = '☰';
-            });
-        });
+    });
 
-        // ===== Reveal on scroll with stagger =====
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const delay = parseInt(entry.target.dataset.delay || '0', 10);
-                    setTimeout(() => {
-                        entry.target.classList.add('visible');
-                    }, delay);
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
-
-        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-        // ===== Supabase auth callback =====
-        const SUPABASE_URL = 'https://xiwfuenqxyfzadggakip.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpd2Z1ZW5xeHlmemFkZ2dha2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzYxNDQsImV4cCI6MjA4ODkxMjE0NH0.leYWfPUg8NLIA3YcFEH5w_gbuVMLw-Z6OVu7_tme4QA';
-
-        async function handleAuth() {
-            const hash = window.location.hash;
-            if (hash && hash.includes('access_token')) {
-                const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                const { data: { session } } = await sb.auth.getSession();
-                if (session) {
-                    // Redirect to dashboard
-                    window.location.href = '/dashboard';
-                }
+    // Reveal on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const delay = parseInt(entry.target.dataset.delay || '0', 10);
+                setTimeout(() => entry.target.classList.add('visible'), delay);
+                observer.unobserve(entry.target);
             }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Auth callback
+    const SUPABASE_URL = 'https://xiwfuenqxyfzadggakip.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpd2Z1ZW5xeHlmemFkZ2dha2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzYxNDQsImV4cCI6MjA4ODkxMjE0NH0.leYWfPUg8NLIA3YcFEH5w_gbuVMLw-Z6OVu7_tme4QA';
+    async function handleAuth() {
+        const hash = window.location.hash;
+        if (hash && hash.includes('access_token')) {
+            const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            await sb.auth.getSession();
+            window.location.href = '/dashboard';
         }
-        handleAuth();
-    </script>
+    }
+    handleAuth();
+</script>
 </body>
 </html>
