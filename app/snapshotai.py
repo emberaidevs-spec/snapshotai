@@ -320,7 +320,6 @@ class ResultOverlay(QWidget):
         self.setObjectName("resultWindow")
         flags = (Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool) if PYQT6 else (Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setWindowFlags(flags)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground if PYQT6 else Qt.WA_TranslucentBackground)
         
         self.setFixedWidth(420)
         self.setMinimumHeight(240)
