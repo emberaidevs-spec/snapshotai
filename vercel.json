@@ -13,8 +13,8 @@
     { "source": "/pricing", "destination": "/pricing.html" },
     { "source": "/docs", "destination": "/docs.html" },
     { "source": "/help", "destination": "/docs.html" },
-    { "source": "/downloads/SnapShotAI.exe", "destination": "http://5.78.191.207:8766/SnapShotAI.exe" },
-    { "source": "/downloads/SnapShotAI.dmg", "destination": "http://5.78.191.207:8766/SnapShotAI.dmg" },
+    { "source": "/downloads/SnapShotAI.exe", "destination": "/api/download?file=SnapShotAI.exe" },
+    { "source": "/downloads/SnapShotAI.dmg", "destination": "/api/download?file=SnapShotAI.dmg" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
