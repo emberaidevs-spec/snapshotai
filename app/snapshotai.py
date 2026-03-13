@@ -175,11 +175,18 @@ class OAuthCallbackHandler(http.server.BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'text/html')
             self.end_headers()
             self.wfile.write(b'''<!DOCTYPE html><html><head>
-            <style>body{background:#0a0a14;color:#fff;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;}
-            .c{text-align:center;}</style></head><body><div class="c">
-            <p style="font-size:48px;margin-bottom:16px;">&#x2728;</p>
-            <h2>Signing you in...</h2>
-            <p style="color:#71717a;">Completing authentication...</p>
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+            <style>body{background:#09090b;color:#f4f4f5;font-family:Inter,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;}
+            .c{text-align:center;}
+            .logo{width:48px;height:48px;border-radius:12px;margin-bottom:24px;}
+            h2{font-size:18px;font-weight:500;margin-bottom:8px;}
+            .spinner{width:20px;height:20px;border:2px solid rgba(255,255,255,0.06);border-top-color:#8b5cf6;border-radius:50%;animation:spin .7s linear infinite;margin:20px auto 0;}
+            @keyframes spin{to{transform:rotate(360deg);}}</style></head><body><div class="c">
+            <img src="https://snapshotai-beta.vercel.app/logo-256.png" class="logo" alt="">
+            <h2>Signing you in</h2>
+            <p style="color:#71717a;font-size:14px;">Completing authentication...</p>
+            <div class="spinner"></div>
             </div>
             <script>
             const hash = window.location.hash.substring(1);
