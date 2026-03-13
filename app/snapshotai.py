@@ -33,8 +33,12 @@ except ImportError:
                              QPixmap, QLinearGradient)
     PYQT6 = False
 
-import keyboard
 import platform
+
+# Platform-specific hotkey registration
+if platform.system() == 'Windows':
+    import ctypes
+    import ctypes.wintypes
 
 # ===== Stealth Mode: Hide from screen capture =====
 def make_window_stealth(widget):
@@ -678,10 +682,8 @@ class SnapShotAI:
         # Tray
         self._setup_tray()
         
-        # Hotkeys
-        keyboard.add_hotkey(CAPTURE_HOTKEY, self.full_capture)
-        keyboard.add_hotkey(REGION_HOTKEY, self.start_capture)
-        keyboard.add_hotkey(QUIT_HOTKEY, self.quit)
+        # Register global hotkeys
+        self._setup_hotkeys()
     
     def _setup_tray(self):
         pixmap = QPixmap(32, 32)
@@ -778,8 +780,85 @@ class SnapShotAI:
         self._setup_tray()
         self._show_login()
     
+    def _setup_hotkeys(self):
+        """Register global hotkeys using native OS APIs"""
+        if platform.system() == 'Windows':
+            self._setup_windows_hotkeys()
+        else:
+            # Fallback: try keyboard library for Mac/Linux
+            try:
+                import keyboard
+                keyboard.add_hotkey('ctrl+shift+s', self.full_capture)
+                keyboard.add_hotkey('ctrl+shift+a', self.start_capture)
+                keyboard.add_hotkey('ctrl+shift+q', self.quit)
+            except:
+                print("[Hotkeys] Could not register hotkeys")
+    
+    def _setup_windows_hotkeys(self):
+        """Use Windows RegisterHotKey API — works reliably with PyInstaller"""
+        import threading
+        
+        # Hotkey IDs
+        self.HOTKEY_FULLCAP = 1
+        self.HOTKEY_REGION = 2
+        self.HOTKEY_QUIT = 3
+        
+        # Modifier keys
+        MOD_CTRL = 0x0002
+        MOD_SHIFT = 0x0004
+        MOD_NOREPEAT = 0x4000
+        
+        # Virtual key codes
+        VK_S = 0x53
+        VK_A = 0x41
+        VK_Q = 0x51
+        
+        def hotkey_thread():
+            # Register hotkeys (must be done in the thread that pumps messages)
+            user32 = ctypes.windll.user32
+            
+            mods = MOD_CTRL | MOD_SHIFT | MOD_NOREPEAT
+            
+            if user32.RegisterHotKey(None, self.HOTKEY_FULLCAP, mods, VK_S):
+                print("[Hotkeys] Ctrl+Shift+S registered (full screen)")
+            else:
+                print("[Hotkeys] Failed to register Ctrl+Shift+S")
+            
+            if user32.RegisterHotKey(None, self.HOTKEY_REGION, mods, VK_A):
+                print("[Hotkeys] Ctrl+Shift+A registered (region)")
+            else:
+                print("[Hotkeys] Failed to register Ctrl+Shift+A")
+            
+            if user32.RegisterHotKey(None, self.HOTKEY_QUIT, mods, VK_Q):
+                print("[Hotkeys] Ctrl+Shift+Q registered (quit)")
+            else:
+                print("[Hotkeys] Failed to register Ctrl+Shift+Q")
+            
+            # Message pump
+            msg = ctypes.wintypes.MSG()
+            while ctypes.windll.user32.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
+                if msg.message == 0x0312:  # WM_HOTKEY
+                    hotkey_id = msg.wParam
+                    if hotkey_id == self.HOTKEY_FULLCAP:
+                        QTimer.singleShot(0, self.full_capture)
+                    elif hotkey_id == self.HOTKEY_REGION:
+                        QTimer.singleShot(0, self.start_capture)
+                    elif hotkey_id == self.HOTKEY_QUIT:
+                        QTimer.singleShot(0, self.quit)
+        
+        self._hotkey_thread = threading.Thread(target=hotkey_thread, daemon=True)
+        self._hotkey_thread.start()
+    
     def quit(self):
-        keyboard.unhook_all()
+        # Unregister hotkeys on Windows
+        if platform.system() == 'Windows':
+            try:
+                user32 = ctypes.windll.user32
+                user32.UnregisterHotKey(None, 1)
+                user32.UnregisterHotKey(None, 2)
+                user32.UnregisterHotKey(None, 3)
+            except:
+                pass
         self.tray.hide()
         self.app.quit()
     
