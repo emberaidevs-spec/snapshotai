@@ -21,12 +21,12 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install PyQt6 Pillow keyboard pyinstaller
+          pip install PyQt6 Pillow keyboard pynput pyinstaller
       
       - name: Build .exe
         run: |
           cd app
-          pyinstaller --name SnapShotAI --onefile --windowed --clean snapshotai.py
+          pyinstaller --name SnapShotAI --onefile --windowed --hidden-import=pynput.keyboard._win32 --hidden-import=pynput.mouse._win32 --clean snapshotai.py
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -46,12 +46,12 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install PyQt6 Pillow keyboard pyinstaller
+          pip install PyQt6 Pillow keyboard pynput pyinstaller
       
       - name: Build .app
         run: |
           cd app
-          pyinstaller --name SnapShotAI --onefile --windowed --osx-bundle-identifier com.snapshotai.app --clean snapshotai.py
+          pyinstaller --name SnapShotAI --onefile --windowed --osx-bundle-identifier com.snapshotai.app --hidden-import=pynput.keyboard._darwin --hidden-import=pynput.mouse._darwin --clean snapshotai.py
       
       - name: Create DMG
         run: |

@@ -34,10 +34,8 @@ except ImportError:
     PYQT6 = False
 
 import platform
-
-# Platform-specific hotkey registration
+import ctypes
 if platform.system() == 'Windows':
-    import ctypes
     import ctypes.wintypes
 
 # ===== Stealth Mode: Hide from screen capture =====
@@ -781,84 +779,47 @@ class SnapShotAI:
         self._show_login()
     
     def _setup_hotkeys(self):
-        """Register global hotkeys using native OS APIs"""
-        if platform.system() == 'Windows':
-            self._setup_windows_hotkeys()
-        else:
-            # Fallback: try keyboard library for Mac/Linux
+        """Register global hotkeys using pynput"""
+        try:
+            from pynput import keyboard as pynput_kb
+            
+            def on_activate_full():
+                QTimer.singleShot(0, self.full_capture)
+            
+            def on_activate_region():
+                QTimer.singleShot(0, self.start_capture)
+            
+            def on_activate_quit():
+                QTimer.singleShot(0, self.quit)
+            
+            self._hotkey_listener = pynput_kb.GlobalHotKeys({
+                '<ctrl>+<shift>+s': on_activate_full,
+                '<ctrl>+<shift>+a': on_activate_region,
+                '<ctrl>+<shift>+q': on_activate_quit,
+            })
+            self._hotkey_listener.start()
+            print("[Hotkeys] Registered via pynput:")
+            print("[Hotkeys]   Ctrl+Shift+S → Full screen capture")
+            print("[Hotkeys]   Ctrl+Shift+A → Region capture")
+            print("[Hotkeys]   Ctrl+Shift+Q → Quit")
+        except Exception as e:
+            print(f"[Hotkeys] pynput failed: {e}")
+            # Fallback to keyboard library
             try:
                 import keyboard
-                keyboard.add_hotkey('ctrl+shift+s', self.full_capture)
-                keyboard.add_hotkey('ctrl+shift+a', self.start_capture)
-                keyboard.add_hotkey('ctrl+shift+q', self.quit)
-            except:
-                print("[Hotkeys] Could not register hotkeys")
-    
-    def _setup_windows_hotkeys(self):
-        """Use Windows RegisterHotKey API — works reliably with PyInstaller"""
-        import threading
-        
-        # Hotkey IDs
-        self.HOTKEY_FULLCAP = 1
-        self.HOTKEY_REGION = 2
-        self.HOTKEY_QUIT = 3
-        
-        # Modifier keys
-        MOD_CTRL = 0x0002
-        MOD_SHIFT = 0x0004
-        MOD_NOREPEAT = 0x4000
-        
-        # Virtual key codes
-        VK_S = 0x53
-        VK_A = 0x41
-        VK_Q = 0x51
-        
-        def hotkey_thread():
-            # Register hotkeys (must be done in the thread that pumps messages)
-            user32 = ctypes.windll.user32
-            
-            mods = MOD_CTRL | MOD_SHIFT | MOD_NOREPEAT
-            
-            if user32.RegisterHotKey(None, self.HOTKEY_FULLCAP, mods, VK_S):
-                print("[Hotkeys] Ctrl+Shift+S registered (full screen)")
-            else:
-                print("[Hotkeys] Failed to register Ctrl+Shift+S")
-            
-            if user32.RegisterHotKey(None, self.HOTKEY_REGION, mods, VK_A):
-                print("[Hotkeys] Ctrl+Shift+A registered (region)")
-            else:
-                print("[Hotkeys] Failed to register Ctrl+Shift+A")
-            
-            if user32.RegisterHotKey(None, self.HOTKEY_QUIT, mods, VK_Q):
-                print("[Hotkeys] Ctrl+Shift+Q registered (quit)")
-            else:
-                print("[Hotkeys] Failed to register Ctrl+Shift+Q")
-            
-            # Message pump
-            msg = ctypes.wintypes.MSG()
-            while ctypes.windll.user32.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
-                if msg.message == 0x0312:  # WM_HOTKEY
-                    hotkey_id = msg.wParam
-                    if hotkey_id == self.HOTKEY_FULLCAP:
-                        QTimer.singleShot(0, self.full_capture)
-                    elif hotkey_id == self.HOTKEY_REGION:
-                        QTimer.singleShot(0, self.start_capture)
-                    elif hotkey_id == self.HOTKEY_QUIT:
-                        QTimer.singleShot(0, self.quit)
-        
-        self._hotkey_thread = threading.Thread(target=hotkey_thread, daemon=True)
-        self._hotkey_thread.start()
+                keyboard.add_hotkey('ctrl+shift+s', lambda: QTimer.singleShot(0, self.full_capture))
+                keyboard.add_hotkey('ctrl+shift+a', lambda: QTimer.singleShot(0, self.start_capture))
+                keyboard.add_hotkey('ctrl+shift+q', lambda: QTimer.singleShot(0, self.quit))
+                print("[Hotkeys] Registered via keyboard library (fallback)")
+            except Exception as e2:
+                print(f"[Hotkeys] All methods failed: {e2}")
     
     def quit(self):
-        # Unregister hotkeys on Windows
-        if platform.system() == 'Windows':
-            try:
-                user32 = ctypes.windll.user32
-                user32.UnregisterHotKey(None, 1)
-                user32.UnregisterHotKey(None, 2)
-                user32.UnregisterHotKey(None, 3)
-            except:
-                pass
+        try:
+            if hasattr(self, '_hotkey_listener'):
+                self._hotkey_listener.stop()
+        except:
+            pass
         self.tray.hide()
         self.app.quit()
     
