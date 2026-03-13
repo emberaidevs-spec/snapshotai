@@ -402,7 +402,10 @@ class ResultOverlay(QWidget):
         self.response.setText("⏳ Analyzing screenshot...")
         self.status_label.setText("")
         self.show()
-        make_window_stealth(self)
+        self.raise_()
+        self.activateWindow()
+        # Stealth temporarily disabled for debugging
+        # make_window_stealth(self)
         
         cursor = QCursor.pos()
         screen = QApplication.primaryScreen().geometry()
@@ -724,17 +727,23 @@ class SnapShotAI:
     
     def _do_full_capture(self):
         try:
+            print("[Capture] Taking full screen capture...")
             screen = QApplication.primaryScreen()
             geometry = screen.geometry()
+            print(f"[Capture] Screen: {geometry.width()}x{geometry.height()}")
             img = ImageGrab.grab(bbox=(geometry.x(), geometry.y(), 
                                        geometry.x() + geometry.width(), 
                                        geometry.y() + geometry.height()))
             buf = io.BytesIO()
             img.save(buf, format='PNG', optimize=True)
             b64 = base64.b64encode(buf.getvalue()).decode()
+            print(f"[Capture] Image size: {len(b64) // 1024}KB base64")
+            print("[Capture] Sending to analysis server...")
             self.result.analyze(b64, self.token)
         except Exception as e:
-            print(f"Full capture error: {e}")
+            print(f"[Capture] Full capture error: {e}")
+            import traceback
+            traceback.print_exc()
     
     def _show_selection(self):
         self.selection.showFullScreen()
