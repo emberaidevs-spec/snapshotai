@@ -26,7 +26,8 @@ jobs:
       - name: Build .exe
         run: |
           cd app
-          pyinstaller --name SnapShotAI --onefile --windowed --icon=icon.ico --hidden-import=pynput.keyboard._win32 --hidden-import=pynput.mouse._win32 --clean snapshotai.py
+          copy icon.ico icon_build.ico
+          pyinstaller --name SnapShotAI --onefile --windowed --icon=icon_build.ico --hidden-import=pynput.keyboard._win32 --hidden-import=pynput.mouse._win32 --add-data "icon.ico;." --clean snapshotai.py
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4
