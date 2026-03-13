@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing — SnapShotAI</title>
+    <meta name="description" content="Simple pricing. Start free, upgrade when you're ready.">
+    
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/logo-256.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #09090b;
+            --surface: #0f0f13;
+            --surface-2: #16161c;
+            --purple: #8b5cf6;
+            --purple-hover: #7c3aed;
+            --text: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --text-tertiary: #71717a;
+            --border: rgba(255,255,255,0.06);
+            --border-hover: rgba(255,255,255,0.12);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg); color: var(--text-secondary);
+            line-height: 1.6; -webkit-font-smoothing: antialiased;
+        }
+
+        .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+        h1, h2, h3 { color: var(--text); }
+
+        /* Nav */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(9,9,11,0.8); backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-inner {
+            max-width: 1080px; margin: 0 auto; padding: 16px 24px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .nav-logo {
+            font-size: 15px; font-weight: 600; color: var(--text);
+            text-decoration: none; display: flex; align-items: center; gap: 10px;
+        }
+        .nav-logo img { width: 24px; height: 24px; border-radius: 6px; }
+        .nav-links { display: flex; align-items: center; gap: 8px; }
+        .nav-links a {
+            color: var(--text-tertiary); text-decoration: none;
+            font-size: 13px; font-weight: 500; padding: 6px 12px;
+            border-radius: 6px; transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text-secondary); }
+        .nav-links a.active { color: var(--text); }
+        .nav-cta {
+            background: var(--text) !important; color: var(--bg) !important;
+            font-weight: 600 !important; padding: 7px 16px !important;
+            border-radius: 8px !important; font-size: 13px !important;
+        }
+        .nav-hamburger {
+            display: none; background: none; border: none;
+            color: var(--text); font-size: 20px; cursor: pointer;
+        }
+        .nav-mobile {
+            display: none; position: fixed; top: 56px; left: 0; right: 0;
+            background: rgba(9,9,11,0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); padding: 16px 24px;
+            flex-direction: column; gap: 8px; z-index: 99;
+        }
+        .nav-mobile.open { display: flex; }
+        .nav-mobile a { color: var(--text-secondary); text-decoration: none; font-size: 14px; padding: 10px 0; }
+
+        /* Header */
+        .page-header {
+            padding: 140px 0 80px; text-align: center;
+        }
+        .page-header h1 {
+            font-size: clamp(40px, 5vw, 64px); font-weight: 500;
+            letter-spacing: -0.04em; margin-bottom: 16px;
+        }
+        .page-header p {
+            font-size: 16px; color: var(--text-tertiary);
+            max-width: 480px; margin: 0 auto; line-height: 1.7;
+        }
+
+        /* Pricing Grid */
+        .pricing-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            border: 1px solid var(--border); border-radius: 12px;
+            overflow: hidden; max-width: 760px; margin: 0 auto;
+        }
+        .plan {
+            padding: 40px 36px; position: relative;
+        }
+        .plan:first-child {
+            border-right: 1px solid var(--border);
+        }
+        .plan.featured {
+            background: var(--surface);
+        }
+        .plan-badge {
+            position: absolute; top: 16px; right: 16px;
+            background: var(--purple); color: white;
+            font-size: 11px; font-weight: 600; padding: 3px 10px;
+            border-radius: 100px;
+        }
+        .plan h3 {
+            font-size: 22px; font-weight: 500; margin-bottom: 8px;
+        }
+        .plan .plan-price {
+            font-size: 16px; color: var(--text-secondary); margin-bottom: 24px;
+        }
+        .plan .plan-price strong {
+            font-size: 36px; font-weight: 500; color: var(--text);
+            letter-spacing: -0.03em;
+        }
+        .plan-note {
+            font-size: 14px; color: var(--text-tertiary);
+            padding-bottom: 24px; margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        .plan-features { list-style: none; }
+        .plan-features li {
+            padding: 8px 0; font-size: 14px; color: var(--text-secondary);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .check {
+            width: 18px; height: 18px; border-radius: 50%;
+            background: rgba(139,92,246,0.15); display: flex;
+            align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .check svg { width: 10px; height: 10px; }
+        .plan-cta {
+            margin-top: 32px;
+        }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px; width: 100%;
+            padding: 12px 24px; border-radius: 10px; font-size: 14px;
+            font-weight: 600; font-family: inherit; text-decoration: none;
+            cursor: pointer; transition: all 0.15s ease; border: none;
+        }
+        .btn-secondary {
+            background: transparent; color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { border-color: var(--border-hover); color: var(--text); }
+        .btn-purple { background: var(--purple); color: white; }
+        .btn-purple:hover {
+            background: var(--purple-hover);
+            box-shadow: 0 8px 30px rgba(139,92,246,0.25);
+        }
+
+        /* FAQ */
+        .faq {
+            max-width: 600px; margin: 80px auto 0;
+            padding-bottom: 120px;
+        }
+        .faq h2 {
+            font-size: 24px; font-weight: 500; margin-bottom: 32px;
+            text-align: center;
+        }
+        .faq-item {
+            border-bottom: 1px solid var(--border); padding: 20px 0;
+        }
+        .faq-item h3 {
+            font-size: 15px; font-weight: 500; margin-bottom: 8px;
+        }
+        .faq-item p {
+            font-size: 14px; color: var(--text-tertiary); line-height: 1.7;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border); padding: 24px 0;
+        }
+        .footer-inner {
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        footer p { font-size: 13px; color: var(--text-tertiary); }
+        .footer-links { display: flex; gap: 24px; }
+        .footer-links a {
+            font-size: 13px; color: var(--text-tertiary);
+            text-decoration: none; transition: color 0.2s;
+        }
+        .footer-links a:hover { color: var(--text-secondary); }
+
+        /* Animations */
+        .reveal {
+            opacity: 0; transform: translateY(20px);
+            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 640px) {
+            .pricing-grid { grid-template-columns: 1fr; }
+            .plan:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+            .nav-links { display: none; }
+            .nav-hamburger { display: block; }
+            .page-header { padding: 120px 0 60px; }
+            .footer-inner { flex-direction: column; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-inner">
+        <a href="/" class="nav-logo">
+            <img src="/logo-256.png" alt="SnapShotAI">
+            SnapShotAI
+        </a>
+        <div class="nav-links">
+            <a href="/#features">Features</a>
+            <a href="/#how">How it works</a>
+            <a href="/pricing" class="active">Pricing</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/#download" class="nav-cta">Download</a>
+        </div>
+        <button class="nav-hamburger" id="hamburger" aria-label="Menu">☰</button>
+    </div>
+</nav>
+<div class="nav-mobile" id="mobileMenu">
+    <a href="/#features">Features</a>
+    <a href="/#how">How it works</a>
+    <a href="/pricing">Pricing</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/#download">Download</a>
+</div>
+
+<main>
+    <div class="page-header">
+        <h1 class="reveal">Pricing</h1>
+        <p class="reveal">Start free with 15 daily captures. Upgrade to Pro for unlimited access and priority features.</p>
+    </div>
+
+    <div class="container">
+        <div class="pricing-grid reveal">
+            <div class="plan">
+                <h3>Free</h3>
+                <div class="plan-price"><strong>$0</strong></div>
+                <div class="plan-note">Free for everyone</div>
+                <ul class="plan-features">
+                    <li>
+                        <span class="check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5.5L4 7.5L8 3" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        15 captures per day
+                    </li>
+                    <li>
+                        <span class="check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5.5L4 7.5L8 3" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        AI-powered analysis
+                    </li>
+                    <li>
+                        <span class="check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5.5L4 7.5L8 3" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        Follow-up questions
+                    </li>
+                    <li>
+                        <span class="check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5.5L4 7.5L8 3" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        Stealth mode
+                    </li>
+                    <li>
+                        <span class="check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5.5L4 7.5L8 3" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        Windows + Mac
+                    </li>
+                </ul>
+                <div class="plan-cta">
+                    <a href="/#download" class="btn btn-secondary">Download free</a>
+                </div>
+            </div>
+            <div class="plan featured">
+                <span class="plan-badge">Popular</span>
+                <h3>Pro</h3>
+                <div class="plan-price"><strong>$5.99</strong> per month</div>
+                <div class="plan-note">For power users</div>
+                <ul class="plan-features">
+                    <li>
+                        <span class="check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5.5L4 7.5L8 3" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        All Free features +
+                    </li>
+                    <li>
+                        <span class="check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5.5L4 7.5L8 3" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        Unlimited captures
+                    </li>
+                    <li>
+                        <span class="check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5.5L4 7.5L8 3" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        Priority AI responses
+                    </li>
+                    <li>
+                        <span class="check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5.5L4 7.5L8 3" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        Capture history & search
+                    </li>
+                    <li>
+                        <span class="check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5.5L4 7.5L8 3" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        Early access to features
+                    </li>
+                </ul>
+                <div class="plan-cta">
+                    <a href="/#download" class="btn btn-purple">Go Pro</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="faq reveal">
+            <h2>Questions</h2>
+            <div class="faq-item">
+                <h3>Do I need an account to use SnapShotAI?</h3>
+                <p>Yes, a free account is required to track your daily captures. Sign up takes 10 seconds — just email and password.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Can I cancel Pro anytime?</h3>
+                <p>Yes. Cancel anytime from your dashboard. You'll keep Pro features until the end of your billing period.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Is there a student discount?</h3>
+                <p>Coming soon. We're working on .edu verification for discounted pricing.</p>
+            </div>
+            <div class="faq-item">
+                <h3>What counts as a "capture"?</h3>
+                <p>Each screenshot you analyze with AI counts as one capture. Taking a screenshot without analyzing it doesn't count.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Is my data private?</h3>
+                <p>Yes. Screenshots are processed by AI and immediately discarded. We never store your images.</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <div class="footer-inner">
+            <p>© 2026 SnapShotAI</p>
+            <div class="footer-links">
+                <a href="https://twitter.com/EmberdevAi">Twitter</a>
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    hamburger.addEventListener('click', () => {
+        const open = mobileMenu.classList.toggle('open');
+        hamburger.textContent = open ? '✕' : '☰';
+    });
+    mobileMenu.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => { mobileMenu.classList.remove('open'); hamburger.textContent = '☰'; });
+    });
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
