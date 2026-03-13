@@ -79,7 +79,8 @@ SUPABASE_URL = "https://xiwfuenqxyfzadggakip.supabase.co"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpd2Z1ZW5xeHlmemFkZ2dha2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzYxNDQsImV4cCI6MjA4ODkxMjE0NH0.leYWfPUg8NLIA3YcFEH5w_gbuVMLw-Z6OVu7_tme4QA"
 CONFIG_DIR = Path.home() / '.snapshotai'
 CONFIG_FILE = CONFIG_DIR / 'config.json'
-CAPTURE_HOTKEY = 'ctrl+shift+s'
+CAPTURE_HOTKEY = 'ctrl+shift+s'       # Full screen capture (invisible)
+REGION_HOTKEY = 'ctrl+shift+a'        # Region select capture
 QUIT_HOTKEY = 'ctrl+shift+q'
 OAUTH_PORT = 48271  # Local port for OAuth callback
 
@@ -678,18 +679,21 @@ class SnapShotAI:
         self._setup_tray()
         
         # Hotkeys
-        keyboard.add_hotkey(CAPTURE_HOTKEY, self.start_capture)
+        keyboard.add_hotkey(CAPTURE_HOTKEY, self.full_capture)
+        keyboard.add_hotkey(REGION_HOTKEY, self.start_capture)
         keyboard.add_hotkey(QUIT_HOTKEY, self.quit)
     
     def _setup_tray(self):
         pixmap = QPixmap(32, 32)
         pixmap.fill(QColor(PURPLE))
         self.tray = QSystemTrayIcon(QIcon(pixmap))
-        self.tray.setToolTip(f"{APP_NAME} — {CAPTURE_HOTKEY} to capture")
+        self.tray.setToolTip(f"{APP_NAME} — {CAPTURE_HOTKEY} for full screen, {REGION_HOTKEY} for region")
         
         menu = QMenu()
-        cap = menu.addAction("📸 Capture Screen")
-        cap.triggered.connect(self.start_capture)
+        full_cap = menu.addAction("📸 Full Screen Capture (invisible)")
+        full_cap.triggered.connect(self.full_capture)
+        region_cap = menu.addAction("🔲 Region Capture")
+        region_cap.triggered.connect(self.start_capture)
         menu.addSeparator()
         
         if self.email:
@@ -711,9 +715,30 @@ class SnapShotAI:
             return
         QTimer.singleShot(0, self._show_selection)
     
+    def full_capture(self):
+        """Capture entire screen — completely invisible, no overlay shown"""
+        if not self.token:
+            QTimer.singleShot(0, self._show_login)
+            return
+        QTimer.singleShot(0, self._do_full_capture)
+    
+    def _do_full_capture(self):
+        try:
+            screen = QApplication.primaryScreen()
+            geometry = screen.geometry()
+            img = ImageGrab.grab(bbox=(geometry.x(), geometry.y(), 
+                                       geometry.x() + geometry.width(), 
+                                       geometry.y() + geometry.height()))
+            buf = io.BytesIO()
+            img.save(buf, format='PNG', optimize=True)
+            b64 = base64.b64encode(buf.getvalue()).decode()
+            self.result.analyze(b64, self.token)
+        except Exception as e:
+            print(f"Full capture error: {e}")
+    
     def _show_selection(self):
         self.selection.showFullScreen()
-        # Don't apply stealth to selection overlay — it interferes with screen capture
+        make_window_stealth(self.selection)
     
     def on_capture(self, rect):
         try:
@@ -761,8 +786,9 @@ class SnapShotAI:
     def run(self):
         print(f"\n{'='*50}")
         print(f"  📸 {APP_NAME} v{APP_VERSION}")
-        print(f"  Capture: {CAPTURE_HOTKEY}")
-        print(f"  Quit:    {QUIT_HOTKEY}")
+        print(f"  Full Screen: {CAPTURE_HOTKEY} (invisible)")
+        print(f"  Region:      {REGION_HOTKEY}")
+        print(f"  Quit:        {QUIT_HOTKEY}")
         print(f"{'='*50}\n")
         
         if not self.token:
