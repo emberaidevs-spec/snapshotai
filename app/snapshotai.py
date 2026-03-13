@@ -90,9 +90,10 @@ OAUTH_PORT = 48271  # Local port for OAuth callback
 PURPLE = '#8b5cf6'
 PURPLE_DARK = '#7c3aed'
 BLUE = '#3b82f6'
-BG = '#0a0a14'
-SURFACE = '#111127'
-TEXT = '#ffffff'
+BG = '#09090b'
+SURFACE = '#0f0f13'
+SURFACE_2 = '#16161c'
+TEXT = '#f4f4f5'
 BODY = '#a1a1aa'
 CAPTION = '#71717a'
 GLASS_BG = 'rgba(17,17,39,0.85)'
@@ -458,50 +459,64 @@ class LoginWindow(QWidget):
         self.setWindowFlags(flags)
         self.setFixedSize(400, 520)
         self.setStyleSheet(f"QWidget {{ background: {BG}; color: {TEXT}; font-family: 'Segoe UI', 'SF Pro Display', system-ui, sans-serif; }}")
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground if PYQT6 else Qt.WA_TranslucentBackground)
         
-        layout = QVBoxLayout(self)
+        # Main container with border
+        container = QFrame(self)
+        container.setFixedSize(400, 520)
+        container.setStyleSheet(f"""
+            QFrame {{
+                background: {BG};
+                border: 1px solid rgba(255,255,255,0.06);
+                border-radius: 12px;
+            }}
+        """)
+        
+        layout = QVBoxLayout(container)
         layout.setContentsMargins(36, 32, 36, 32)
-        layout.setSpacing(14)
+        layout.setSpacing(12)
         
         # Logo
-        logo = QLabel("📸 SnapShotAI")
-        logo.setStyleSheet(f"font-size: 26px; font-weight: bold; color: {PURPLE};")
+        logo = QLabel("SnapShotAI")
+        logo.setStyleSheet(f"font-size: 20px; font-weight: 500; color: {TEXT}; border: none; background: transparent;")
         logo.setAlignment(Qt.AlignmentFlag.AlignCenter if PYQT6 else Qt.AlignCenter)
         layout.addWidget(logo)
         
         tagline = QLabel("AI-powered screen capture")
-        tagline.setStyleSheet(f"font-size: 14px; color: {CAPTION};")
+        tagline.setStyleSheet(f"font-size: 13px; color: {CAPTION}; border: none; background: transparent;")
         tagline.setAlignment(Qt.AlignmentFlag.AlignCenter if PYQT6 else Qt.AlignCenter)
         layout.addWidget(tagline)
         
-        layout.addSpacing(20)
+        layout.addSpacing(24)
         
         # Google Sign In
-        google_btn = QPushButton("🔑  Sign in with Google")
-        google_btn.setFixedHeight(46)
-        google_btn.setStyleSheet("""
-            QPushButton { background: white; border: none; border-radius: 12px; color: #333; font-size: 14px; font-weight: bold; }
-            QPushButton:hover { background: #f0f0f0; }
+        google_btn = QPushButton("Sign in with Google")
+        google_btn.setFixedHeight(40)
+        google_btn.setStyleSheet(f"""
+            QPushButton {{ background: {TEXT}; border: none; border-radius: 8px; color: {BG}; font-size: 13px; font-weight: 600; }}
+            QPushButton:hover {{ background: #e4e4e7; }}
         """)
         google_btn.clicked.connect(self.google_signin)
         layout.addWidget(google_btn)
         
         # Divider
-        divider = QLabel("─── or use email ───")
-        divider.setStyleSheet(f"font-size: 12px; color: {CAPTION};")
+        divider = QLabel("or continue with email")
+        divider.setStyleSheet(f"font-size: 12px; color: {CAPTION}; border: none; background: transparent;")
         divider.setAlignment(Qt.AlignmentFlag.AlignCenter if PYQT6 else Qt.AlignCenter)
         layout.addWidget(divider)
+        
+        layout.addSpacing(4)
         
         # Email
         self.email = QLineEdit()
         self.email.setPlaceholderText("Email")
-        self.email.setFixedHeight(42)
+        self.email.setFixedHeight(40)
         input_style = f"""
             QLineEdit {{
-                background: {SURFACE}; border: 1px solid rgba(139,92,246,0.2);
-                border-radius: 10px; color: {TEXT}; font-size: 13px; padding: 0 14px;
+                background: {SURFACE}; border: 1px solid rgba(255,255,255,0.06);
+                border-radius: 8px; color: {TEXT}; font-size: 13px; padding: 0 14px;
             }}
-            QLineEdit:focus {{ border-color: {PURPLE}; }}
+            QLineEdit:focus {{ border-color: rgba(255,255,255,0.12); }}
         """
         self.email.setStyleSheet(input_style)
         layout.addWidget(self.email)
@@ -510,28 +525,30 @@ class LoginWindow(QWidget):
         self.password = QLineEdit()
         self.password.setPlaceholderText("Password")
         self.password.setEchoMode(QLineEdit.EchoMode.Password if PYQT6 else QLineEdit.Password)
-        self.password.setFixedHeight(42)
+        self.password.setFixedHeight(40)
         self.password.setStyleSheet(input_style)
         self.password.returnPressed.connect(self.email_signin)
         layout.addWidget(self.password)
         
+        layout.addSpacing(4)
+        
         # Sign in / Sign up buttons
         btn_row = QHBoxLayout()
         
-        signin_btn = QPushButton("Sign In")
-        signin_btn.setFixedHeight(44)
+        signin_btn = QPushButton("Sign in")
+        signin_btn.setFixedHeight(40)
         signin_btn.setStyleSheet(f"""
-            QPushButton {{ background: {PURPLE}; border: none; border-radius: 10px; color: white; font-size: 14px; font-weight: bold; }}
+            QPushButton {{ background: {PURPLE}; border: none; border-radius: 8px; color: white; font-size: 13px; font-weight: 600; }}
             QPushButton:hover {{ background: {PURPLE_DARK}; }}
         """)
         signin_btn.clicked.connect(self.email_signin)
         btn_row.addWidget(signin_btn)
         
-        signup_btn = QPushButton("Sign Up")
-        signup_btn.setFixedHeight(44)
+        signup_btn = QPushButton("Sign up")
+        signup_btn.setFixedHeight(40)
         signup_btn.setStyleSheet(f"""
-            QPushButton {{ background: transparent; border: 1px solid rgba(139,92,246,0.3); border-radius: 10px; color: {TEXT}; font-size: 14px; font-weight: bold; }}
-            QPushButton:hover {{ background: rgba(139,92,246,0.05); border-color: {PURPLE}; }}
+            QPushButton {{ background: transparent; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; color: {BODY}; font-size: 13px; font-weight: 600; }}
+            QPushButton:hover {{ border-color: rgba(255,255,255,0.12); color: {TEXT}; }}
         """)
         signup_btn.clicked.connect(self.email_signup)
         btn_row.addWidget(signup_btn)
@@ -539,7 +556,7 @@ class LoginWindow(QWidget):
         
         # Error/status
         self.error_label = QLabel("")
-        self.error_label.setStyleSheet(f"font-size: 12px; color: #f87171;")
+        self.error_label.setStyleSheet(f"font-size: 12px; color: #f87171; border: none; background: transparent;")
         self.error_label.setAlignment(Qt.AlignmentFlag.AlignCenter if PYQT6 else Qt.AlignCenter)
         self.error_label.setWordWrap(True)
         layout.addWidget(self.error_label)
@@ -547,8 +564,8 @@ class LoginWindow(QWidget):
         layout.addStretch()
         
         # Footer
-        footer = QLabel(f"Free: 15 captures/day · Pro: $5.99/mo unlimited")
-        footer.setStyleSheet(f"font-size: 11px; color: {CAPTION};")
+        footer = QLabel(f"Free: 15 captures/day  ·  Pro: $5.99/mo")
+        footer.setStyleSheet(f"font-size: 11px; color: {CAPTION}; border: none; background: transparent;")
         footer.setAlignment(Qt.AlignmentFlag.AlignCenter if PYQT6 else Qt.AlignCenter)
         layout.addWidget(footer)
         
@@ -556,12 +573,12 @@ class LoginWindow(QWidget):
         close_btn = QPushButton("✕")
         close_btn.setFixedSize(28, 28)
         close_btn.setStyleSheet(f"""
-            QPushButton {{ background: rgba(248,113,113,0.12); border: none; border-radius: 14px; color: #f87171; font-size: 13px; }}
-            QPushButton:hover {{ background: rgba(248,113,113,0.3); }}
+            QPushButton {{ background: transparent; border: none; border-radius: 14px; color: {CAPTION}; font-size: 14px; }}
+            QPushButton:hover {{ color: #f87171; background: rgba(248,113,113,0.1); }}
         """)
         close_btn.clicked.connect(self._on_close)
-        close_btn.move(364, 8)
-        close_btn.setParent(self)
+        close_btn.move(366, 8)
+        close_btn.setParent(container)
         
         self._drag = None
         self._oauth_server = None
