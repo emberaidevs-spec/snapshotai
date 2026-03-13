@@ -713,7 +713,7 @@ class SnapShotAI:
     
     def _show_selection(self):
         self.selection.showFullScreen()
-        make_window_stealth(self.selection)
+        # Don't apply stealth to selection overlay — it interferes with screen capture
     
     def on_capture(self, rect):
         try:
@@ -731,7 +731,6 @@ class SnapShotAI:
         self.login.move((screen.width() - 400) // 2, (screen.height() - 520) // 2)
         self.login.show()
         self.login.raise_()
-        make_window_stealth(self.login)
     
     def on_login(self, token, email):
         self.token = token
