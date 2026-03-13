@@ -3,517 +3,427 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SnapShotAI — Dashboard</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%238b5cf6'/><text x='50%25' y='55%25' dominant-baseline='central' text-anchor='middle' font-size='20'>⚡</text></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <title>Dashboard — SnapShotAI</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --bg: #0a0a14;
-            --surface: #111127;
+            --bg: #09090b;
+            --surface: #0f0f13;
+            --surface-2: #16161c;
             --purple: #8b5cf6;
-            --purple-dark: #7c3aed;
-            --blue: #3b82f6;
-            --text: #ffffff;
-            --body: #a1a1aa;
-            --caption: #71717a;
+            --purple-hover: #7c3aed;
+            --text: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --text-tertiary: #71717a;
             --border: rgba(255,255,255,0.06);
-            --glass-bg: rgba(17,17,39,0.6);
-            --glass-border: rgba(255,255,255,0.08);
+            --border-hover: rgba(255,255,255,0.12);
             --green: #22c55e;
             --red: #ef4444;
         }
         body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--body);
-            line-height: 1.6;
-            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg); color: var(--text-secondary);
+            line-height: 1.6; min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(139,92,246,0.025) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(139,92,246,0.025) 1px, transparent 1px);
-            background-size: 64px 64px;
-            pointer-events: none;
-        }
+        .container { max-width: 720px; margin: 0 auto; padding: 0 24px; }
         h1, h2, h3 { color: var(--text); }
-        .container { max-width: 800px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+        code { font-family: 'JetBrains Mono', monospace; }
 
         /* Nav */
-        .dash-nav {
-            padding: 20px 0;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 40px;
+        nav {
+            padding: 0; border-bottom: 1px solid var(--border);
+            background: rgba(9,9,11,0.8); backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: sticky; top: 0; z-index: 10;
         }
-        .dash-nav .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .nav-inner {
+            max-width: 720px; margin: 0 auto; padding: 14px 24px;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .dash-nav a {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .nav-logo {
+            font-size: 15px; font-weight: 600; color: var(--text);
+            text-decoration: none; display: flex; align-items: center; gap: 10px;
         }
-        .dash-nav .icon {
-            width: 28px;
-            height: 28px;
-            background: linear-gradient(135deg, var(--purple), var(--blue));
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
+        .nav-logo img { width: 22px; height: 22px; border-radius: 5px; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-right a {
+            font-size: 13px; color: var(--text-tertiary); text-decoration: none;
+            padding: 6px 12px; border-radius: 6px; transition: color 0.2s;
         }
+        .nav-right a:hover { color: var(--text-secondary); }
         .sign-out-btn {
-            padding: 8px 16px;
-            background: transparent;
-            border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            color: var(--body);
-            font-size: 13px;
-            cursor: pointer;
-            font-family: inherit;
-            transition: all 0.2s;
+            padding: 6px 14px; background: transparent;
+            border: 1px solid var(--border); border-radius: 6px;
+            color: var(--text-tertiary); font-size: 13px;
+            cursor: pointer; font-family: inherit; transition: all 0.2s;
         }
         .sign-out-btn:hover { border-color: var(--red); color: var(--red); }
 
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 100px 0;
-            font-size: 16px;
-            color: var(--caption);
-        }
-        .loading .spinner {
-            width: 32px;
-            height: 32px;
-            border: 3px solid var(--border);
-            border-top-color: var(--purple);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 16px;
+        /* Loading / Auth */
+        .loading { text-align: center; padding: 120px 0; color: var(--text-tertiary); }
+        .spinner {
+            width: 24px; height: 24px; border: 2px solid var(--border);
+            border-top-color: var(--purple); border-radius: 50%;
+            animation: spin 0.7s linear infinite; margin: 0 auto 12px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Not signed in */
-        .auth-prompt {
-            text-align: center;
-            padding: 80px 0;
-        }
-        .auth-prompt h2 { margin-bottom: 12px; }
-        .auth-prompt p { margin-bottom: 24px; color: var(--caption); }
+        .auth-prompt { text-align: center; padding: 120px 0; }
+        .auth-prompt h2 { font-size: 20px; font-weight: 500; margin-bottom: 8px; }
+        .auth-prompt p { color: var(--text-tertiary); font-size: 14px; margin-bottom: 28px; }
+        
         .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            border: none;
-            font-family: inherit;
-            transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 20px; border-radius: 8px; font-size: 13px;
+            font-weight: 600; font-family: inherit; text-decoration: none;
+            cursor: pointer; transition: all 0.15s; border: none;
         }
-        .btn-primary { background: var(--purple); color: white; }
-        .btn-primary:hover { background: var(--purple-dark); }
-        .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--glass-border); }
-        .btn-ghost:hover { border-color: var(--purple); }
+        .btn-primary { background: var(--text); color: var(--bg); }
+        .btn-primary:hover { opacity: 0.85; }
+        .btn-secondary { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--border-hover); color: var(--text); }
+        .btn-purple { background: var(--purple); color: white; }
+        .btn-purple:hover { background: var(--purple-hover); }
 
-        /* Dashboard content */
-        .dash-content { padding-bottom: 60px; }
-        .dash-header { margin-bottom: 36px; }
-        .dash-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-        .dash-header p { color: var(--caption); font-size: 14px; }
+        /* Dashboard */
+        .dash { padding: 40px 0 80px; }
+        .dash-header { margin-bottom: 32px; }
+        .dash-header h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+        .dash-header p { font-size: 14px; color: var(--text-tertiary); }
 
-        /* Cards */
-        .glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-        }
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
+        /* Stat cards */
+        .stat-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            border: 1px solid var(--border); border-radius: 10px;
+            overflow: hidden; margin-bottom: 24px; background: var(--border);
+            gap: 1px;
         }
         .stat-card {
-            padding: 24px;
-            text-align: center;
+            background: var(--bg); padding: 24px; text-align: center;
         }
         .stat-label {
-            font-size: 12px;
-            color: var(--caption);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 8px;
+            font-size: 11px; color: var(--text-tertiary);
+            text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
         }
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--text);
-        }
+        .stat-value { font-size: 28px; font-weight: 500; color: var(--text); }
         .stat-value.purple { color: var(--purple); }
         .stat-value.green { color: var(--green); }
-        .stat-sub {
-            font-size: 12px;
-            color: var(--caption);
-            margin-top: 4px;
-        }
+        .stat-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 4px; }
 
-        /* Account section */
-        .account-card {
-            padding: 28px;
-            margin-bottom: 24px;
+        /* Cards */
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 10px; padding: 24px; margin-bottom: 16px;
         }
-        .account-card h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .card-title {
+            font-size: 14px; font-weight: 500; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 10px;
         }
+        .card-title svg { width: 16px; height: 16px; color: var(--text-tertiary); }
+
+        /* Info rows */
         .info-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 0;
-            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid var(--border);
         }
         .info-row:last-child { border-bottom: none; }
-        .info-label { font-size: 14px; color: var(--caption); }
-        .info-value { font-size: 14px; color: var(--text); font-weight: 500; }
+        .info-label { font-size: 13px; color: var(--text-tertiary); }
+        .info-value { font-size: 13px; color: var(--text); font-weight: 500; }
         .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 100px;
-            font-size: 12px;
-            font-weight: 600;
+            padding: 3px 10px; border-radius: 100px;
+            font-size: 11px; font-weight: 600;
         }
-        .badge-free {
-            background: rgba(139,92,246,0.1);
-            color: var(--purple);
-            border: 1px solid rgba(139,92,246,0.2);
-        }
-        .badge-pro {
-            background: linear-gradient(135deg, var(--purple), var(--blue));
-            color: white;
-        }
+        .badge-free { background: rgba(139,92,246,0.1); color: var(--purple); border: 1px solid rgba(139,92,246,0.15); }
+        .badge-pro { background: var(--purple); color: white; }
 
         /* Usage bar */
-        .usage-bar-wrap {
-            margin-top: 16px;
-        }
+        .usage-bar-wrap { margin-top: 4px; }
         .usage-bar-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            margin-bottom: 8px;
+            display: flex; justify-content: space-between;
+            font-size: 12px; color: var(--text-tertiary); margin-bottom: 8px;
         }
         .usage-bar {
-            width: 100%;
-            height: 8px;
-            background: rgba(255,255,255,0.06);
-            border-radius: 100px;
-            overflow: hidden;
+            width: 100%; height: 4px; background: var(--surface-2);
+            border-radius: 100px; overflow: hidden;
         }
         .usage-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--purple), var(--blue));
-            border-radius: 100px;
-            transition: width 0.5s ease;
+            height: 100%; background: var(--purple);
+            border-radius: 100px; transition: width 0.5s ease;
         }
 
-        /* Upgrade CTA */
+        /* Steps */
+        .step-row {
+            display: flex; align-items: flex-start; gap: 14px; padding: 12px 0;
+        }
+        .step-num {
+            width: 24px; height: 24px; border-radius: 6px;
+            background: var(--surface-2); border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 600; color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+        .step-text h4 { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+        .step-text p { font-size: 13px; color: var(--text-tertiary); }
+        .kbd {
+            display: inline-block; padding: 1px 6px;
+            background: var(--surface-2); border: 1px solid var(--border);
+            border-radius: 4px; font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; color: var(--text-secondary);
+        }
+
+        /* Tip */
+        .tip {
+            margin-top: 16px; padding: 12px 14px;
+            background: rgba(139,92,246,0.04); border: 1px solid rgba(139,92,246,0.08);
+            border-radius: 8px; font-size: 13px; color: var(--text-tertiary);
+        }
+        .tip strong { color: var(--text-secondary); }
+
+        /* Upgrade */
         .upgrade-card {
-            padding: 32px;
-            text-align: center;
-            border-color: rgba(139,92,246,0.25);
-            position: relative;
-            overflow: hidden;
+            text-align: center; padding: 32px;
+            border-color: rgba(139,92,246,0.15);
         }
-        .upgrade-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 300px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%);
-            pointer-events: none;
-        }
-        .upgrade-card h3 { font-size: 20px; margin-bottom: 8px; position: relative; }
-        .upgrade-card p { color: var(--caption); font-size: 14px; margin-bottom: 20px; position: relative; }
-        .upgrade-card .btn { position: relative; }
+        .upgrade-card h3 { font-size: 16px; font-weight: 500; margin-bottom: 6px; }
+        .upgrade-card p { font-size: 13px; color: var(--text-tertiary); margin-bottom: 20px; }
 
-        /* Responsive */
         @media (max-width: 600px) {
-            .card-grid { grid-template-columns: 1fr; }
+            .stat-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <!-- Nav -->
-    <div class="dash-nav">
-        <div class="container">
-            <a href="/">
-                <div class="icon">⚡</div>
-                SnapShotAI
-            </a>
-            <button class="sign-out-btn" id="signOutBtn">Sign Out</button>
+
+<nav>
+    <div class="nav-inner">
+        <a href="/" class="nav-logo">
+            <img src="/logo-256.png" alt="SnapShotAI">
+            SnapShotAI
+        </a>
+        <div class="nav-right">
+            <a href="/">Home</a>
+            <a href="/pricing">Pricing</a>
+            <button class="sign-out-btn" id="signOutBtn">Sign out</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div id="loadingState" class="loading">
+        <div class="spinner"></div>
+        Loading...
+    </div>
+
+    <div id="authPrompt" class="auth-prompt" style="display:none;">
+        <h2>Sign in to your dashboard</h2>
+        <p>View usage, manage your account, and upgrade your plan.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button class="btn btn-primary" id="googleSignIn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Sign in with Google
+            </button>
+            <a href="/" class="btn btn-secondary">Back to home</a>
         </div>
     </div>
 
-    <div class="container">
-        <!-- Loading state -->
-        <div id="loadingState" class="loading">
-            <div class="spinner"></div>
-            Loading your dashboard...
+    <div id="dashContent" class="dash" style="display:none;">
+        <div class="dash-header">
+            <h1>Welcome back</h1>
+            <p id="userEmail"></p>
         </div>
 
-        <!-- Not signed in state -->
-        <div id="authPrompt" class="auth-prompt" style="display:none;">
-            <h2>Sign in to view your dashboard</h2>
-            <p>Access your account, usage stats, and subscription details.</p>
-            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-                <button class="btn btn-primary" id="googleSignIn">🔑 Sign in with Google</button>
-                <a href="/" class="btn btn-ghost">← Back to home</a>
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-label">Today's Captures</div>
+                <div class="stat-value purple" id="usageCount">—</div>
+                <div class="stat-sub" id="usageSub">screenshots</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Remaining</div>
+                <div class="stat-value green" id="remainingCount">—</div>
+                <div class="stat-sub" id="remainingSub"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Plan</div>
+                <div class="stat-value" id="planValue">—</div>
+                <div class="stat-sub" id="planSub"></div>
             </div>
         </div>
 
-        <!-- Dashboard content -->
-        <div id="dashContent" class="dash-content" style="display:none;">
-            <div class="dash-header">
-                <h1>Welcome back 👋</h1>
-                <p id="userEmail"></p>
+        <div class="card" id="usageBarCard">
+            <div class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                Daily Usage
             </div>
+            <div class="usage-bar-wrap">
+                <div class="usage-bar-label">
+                    <span id="usageBarLabel">0 / 15 captures</span>
+                    <span id="usageBarPct">0%</span>
+                </div>
+                <div class="usage-bar">
+                    <div class="usage-bar-fill" id="usageBarFill" style="width:0%"></div>
+                </div>
+            </div>
+        </div>
 
-            <!-- Stats -->
-            <div class="card-grid">
-                <div class="stat-card glass">
-                    <div class="stat-label">Today's Captures</div>
-                    <div class="stat-value purple" id="usageCount">—</div>
-                    <div class="stat-sub" id="usageSub"></div>
-                </div>
-                <div class="stat-card glass">
-                    <div class="stat-label">Remaining</div>
-                    <div class="stat-value green" id="remainingCount">—</div>
-                    <div class="stat-sub" id="remainingSub"></div>
-                </div>
-                <div class="stat-card glass">
-                    <div class="stat-label">Plan</div>
-                    <div class="stat-value" id="planValue">—</div>
-                    <div class="stat-sub" id="planSub"></div>
-                </div>
+        <div class="card">
+            <div class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Account
             </div>
+            <div class="info-row">
+                <span class="info-label">Email</span>
+                <span class="info-value" id="infoEmail">—</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Plan</span>
+                <span id="infoPlanBadge"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">User ID</span>
+                <span class="info-value" id="infoId" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-tertiary);">—</span>
+            </div>
+        </div>
 
-            <!-- Usage bar -->
-            <div class="account-card glass" id="usageBarCard">
-                <h3>📊 Daily Usage</h3>
-                <div class="usage-bar-wrap">
-                    <div class="usage-bar-label">
-                        <span id="usageBarLabel">0 / 15 captures</span>
-                        <span id="usageBarPct">0%</span>
-                    </div>
-                    <div class="usage-bar">
-                        <div class="usage-bar-fill" id="usageBarFill" style="width: 0%"></div>
-                    </div>
+        <div class="card" id="guideCard">
+            <div class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                Getting Started
+            </div>
+            <div class="step-row">
+                <div class="step-num">1</div>
+                <div class="step-text">
+                    <h4>Press the hotkey</h4>
+                    <p>Hit <span class="kbd">Ctrl</span> <span class="kbd">Shift</span> <span class="kbd">S</span> for full screen or <span class="kbd">Ctrl</span> <span class="kbd">Shift</span> <span class="kbd">A</span> to select a region.</p>
                 </div>
             </div>
+            <div class="step-row">
+                <div class="step-num">2</div>
+                <div class="step-text">
+                    <h4>AI analyzes your capture</h4>
+                    <p>Code, text, diagrams, errors — analyzed in seconds.</p>
+                </div>
+            </div>
+            <div class="step-row">
+                <div class="step-num">3</div>
+                <div class="step-text">
+                    <h4>Get instant answers</h4>
+                    <p>Read the breakdown and ask follow-up questions in the overlay.</p>
+                </div>
+            </div>
+            <div class="tip">
+                <strong>Tip:</strong> Close this tab — SnapShotAI runs in your system tray and works anywhere. Look for the purple icon near your clock.
+            </div>
+        </div>
 
-            <!-- Account Info -->
-            <div class="account-card glass">
-                <h3>👤 Account</h3>
-                <div class="info-row">
-                    <span class="info-label">Email</span>
-                    <span class="info-value" id="infoEmail">—</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Plan</span>
-                    <span id="infoPlanBadge"></span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">User ID</span>
-                    <span class="info-value" id="infoId" style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--caption);">—</span>
-                </div>
-            </div>
-
-            <!-- Getting Started -->
-            <div class="account-card glass" id="guideCard">
-                <h3>🚀 Getting Started</h3>
-                <div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:start;margin-top:4px;">
-                    <div style="width:32px;height:32px;background:linear-gradient(135deg,#8b5cf6,#3b82f6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;">1</div>
-                    <div>
-                        <div style="color:#fff;font-size:14px;font-weight:600;margin-bottom:2px;">Press the hotkey</div>
-                        <div style="font-size:13px;">Hit <span style="display:inline-block;padding:2px 7px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff;">Ctrl+Shift+S</span> from anywhere on your computer.</div>
-                    </div>
-                    <div style="width:32px;height:32px;background:linear-gradient(135deg,#8b5cf6,#3b82f6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;">2</div>
-                    <div>
-                        <div style="color:#fff;font-size:14px;font-weight:600;margin-bottom:2px;">Select anything</div>
-                        <div style="font-size:13px;">Drag to capture any area — code, text, diagrams, error messages, homework problems.</div>
-                    </div>
-                    <div style="width:32px;height:32px;background:linear-gradient(135deg,#8b5cf6,#3b82f6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;">3</div>
-                    <div>
-                        <div style="color:#fff;font-size:14px;font-weight:600;margin-bottom:2px;">Get instant answers</div>
-                        <div style="font-size:13px;">AI analyzes your capture in seconds. Ask follow-up questions in the overlay.</div>
-                    </div>
-                </div>
-                <div style="margin-top:20px;padding:14px 16px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.15);border-radius:10px;font-size:13px;">
-                    💡 <strong style="color:#fff;">Tip:</strong> You can close this browser tab — SnapShotAI runs in your system tray and works anywhere on your computer. Look for the purple icon near your clock!
-                </div>
-            </div>
-
-            <!-- Upgrade CTA (free users only) -->
-            <div class="upgrade-card glass" id="upgradeCard">
-                <h3>⚡ Upgrade to Pro</h3>
-                <p>Unlimited captures, priority AI, and capture history. Just $5.99/mo.</p>
-                <button class="btn btn-primary" id="upgradeBtn">Go Pro →</button>
-            </div>
+        <div class="card upgrade-card" id="upgradeCard">
+            <h3>Upgrade to Pro</h3>
+            <p>Unlimited captures, priority AI, and capture history. $5.99/mo.</p>
+            <button class="btn btn-purple" id="upgradeBtn">Go Pro</button>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const SUPABASE_URL = 'https://xiwfuenqxyfzadggakip.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpd2Z1ZW5xeHlmemFkZ2dha2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzYxNDQsImV4cCI6MjA4ODkxMjE0NH0.leYWfPUg8NLIA3YcFEH5w_gbuVMLw-Z6OVu7_tme4QA';
-        const API_BASE = '';
-        
-        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = 'https://xiwfuenqxyfzadggakip.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpd2Z1ZW5xeHlmemFkZ2dha2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzYxNDQsImV4cCI6MjA4ODkxMjE0NH0.leYWfPUg8NLIA3YcFEH5w_gbuVMLw-Z6OVu7_tme4QA';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const $loading = document.getElementById('loadingState');
-        const $auth = document.getElementById('authPrompt');
-        const $dash = document.getElementById('dashContent');
+    const $loading = document.getElementById('loadingState');
+    const $auth = document.getElementById('authPrompt');
+    const $dash = document.getElementById('dashContent');
 
-        async function init() {
-            // Check for OAuth callback hash
-            const hash = window.location.hash;
-            if (hash && hash.includes('access_token')) {
-                await sb.auth.getSession();
-                window.location.hash = '';
-            }
-
-            const { data: { session } } = await sb.auth.getSession();
-            
-            if (!session) {
-                $loading.style.display = 'none';
-                $auth.style.display = 'block';
-                return;
-            }
-
-            // Fetch status from API
-            try {
-                const resp = await fetch(`${API_BASE}/api/status`, {
-                    headers: { 'Authorization': `Bearer ${session.access_token}` }
-                });
-                const data = await resp.json();
-                
-                if (data.error) {
-                    console.error('API error:', data.error);
-                }
-                
-                renderDashboard(session, data);
-            } catch (e) {
-                // Fallback: show basic info
-                renderDashboard(session, { 
-                    email: session.user.email, 
-                    plan: 'free', 
-                    usage_today: 0, 
-                    limit: 15, 
-                    remaining: 15 
-                });
-            }
+    async function init() {
+        const hash = window.location.hash;
+        if (hash && hash.includes('access_token')) {
+            await sb.auth.getSession();
+            window.location.hash = '';
         }
-
-        function renderDashboard(session, data) {
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) {
             $loading.style.display = 'none';
-            $dash.style.display = 'block';
+            $auth.style.display = 'block';
+            return;
+        }
+        try {
+            const resp = await fetch('/api/status', {
+                headers: { 'Authorization': `Bearer ${session.access_token}` }
+            });
+            const data = await resp.json();
+            renderDashboard(session, data);
+        } catch (e) {
+            renderDashboard(session, { email: session.user.email, plan: 'free', usage_today: 0, limit: 15, remaining: 15 });
+        }
+    }
 
-            const email = data.email || session.user.email;
-            const plan = data.plan || 'free';
-            const usage = data.usage_today || 0;
-            const limit = data.limit || 15;
-            const remaining = data.remaining;
-            const isPro = plan === 'pro';
+    function renderDashboard(session, data) {
+        $loading.style.display = 'none';
+        $dash.style.display = 'block';
 
-            // Header
-            document.getElementById('userEmail').textContent = email;
+        const email = data.email || session.user.email;
+        const plan = data.plan || 'free';
+        const usage = data.usage_today || 0;
+        const limit = data.limit || 15;
+        const remaining = data.remaining;
+        const isPro = plan === 'pro';
 
-            // Stats
-            document.getElementById('usageCount').textContent = usage;
-            document.getElementById('usageSub').textContent = 'screenshots today';
-            
-            if (isPro) {
-                document.getElementById('remainingCount').textContent = '∞';
-                document.getElementById('remainingSub').textContent = 'unlimited';
-            } else {
-                document.getElementById('remainingCount').textContent = remaining;
-                document.getElementById('remainingSub').textContent = `of ${limit} remaining`;
-            }
-
-            document.getElementById('planValue').textContent = isPro ? 'Pro' : 'Free';
-            document.getElementById('planValue').style.color = isPro ? '#22c55e' : '#8b5cf6';
-            document.getElementById('planSub').textContent = isPro ? '$5.99/mo' : '15/day limit';
-
-            // Usage bar
-            if (isPro) {
-                document.getElementById('usageBarCard').style.display = 'none';
-            } else {
-                const pct = Math.min(100, (usage / limit) * 100);
-                document.getElementById('usageBarLabel').textContent = `${usage} / ${limit} captures`;
-                document.getElementById('usageBarPct').textContent = `${Math.round(pct)}%`;
-                document.getElementById('usageBarFill').style.width = `${pct}%`;
-                if (pct > 80) {
-                    document.getElementById('usageBarFill').style.background = 'linear-gradient(90deg, #f59e0b, #ef4444)';
-                }
-            }
-
-            // Account info
-            document.getElementById('infoEmail').textContent = email;
-            document.getElementById('infoId').textContent = session.user.id;
-            document.getElementById('infoPlanBadge').innerHTML = isPro 
-                ? '<span class="badge badge-pro">⚡ Pro</span>' 
-                : '<span class="badge badge-free">Free</span>';
-
-            // Upgrade card
-            document.getElementById('upgradeCard').style.display = isPro ? 'none' : 'block';
+        document.getElementById('userEmail').textContent = email;
+        document.getElementById('usageCount').textContent = usage;
+        
+        if (isPro) {
+            document.getElementById('remainingCount').textContent = '∞';
+            document.getElementById('remainingSub').textContent = 'unlimited';
+        } else {
+            document.getElementById('remainingCount').textContent = remaining;
+            document.getElementById('remainingSub').textContent = `of ${limit} remaining`;
         }
 
-        // Google Sign In
-        document.getElementById('googleSignIn').addEventListener('click', async () => {
-            await sb.auth.signInWithOAuth({
-                provider: 'google',
-                options: { redirectTo: window.location.origin + '/dashboard.html' }
-            });
-        });
+        document.getElementById('planValue').textContent = isPro ? 'Pro' : 'Free';
+        document.getElementById('planValue').style.color = isPro ? '#22c55e' : '#8b5cf6';
+        document.getElementById('planSub').textContent = isPro ? '$5.99/mo' : '15/day limit';
 
-        // Sign Out
-        document.getElementById('signOutBtn').addEventListener('click', async () => {
-            await sb.auth.signOut();
-            window.location.href = '/';
-        });
+        if (isPro) {
+            document.getElementById('usageBarCard').style.display = 'none';
+        } else {
+            const pct = Math.min(100, (usage / limit) * 100);
+            document.getElementById('usageBarLabel').textContent = `${usage} / ${limit} captures`;
+            document.getElementById('usageBarPct').textContent = `${Math.round(pct)}%`;
+            document.getElementById('usageBarFill').style.width = `${pct}%`;
+            if (pct > 80) document.getElementById('usageBarFill').style.background = '#ef4444';
+        }
 
-        // Upgrade button
-        document.getElementById('upgradeBtn')?.addEventListener('click', () => {
-            // Will connect to Stripe later
-            alert('Pro subscriptions launching soon! 🚀');
-        });
+        document.getElementById('infoEmail').textContent = email;
+        document.getElementById('infoId').textContent = session.user.id;
+        document.getElementById('infoPlanBadge').innerHTML = isPro 
+            ? '<span class="badge badge-pro">Pro</span>' 
+            : '<span class="badge badge-free">Free</span>';
 
-        init();
-    </script>
+        document.getElementById('upgradeCard').style.display = isPro ? 'none' : 'block';
+    }
+
+    document.getElementById('googleSignIn').addEventListener('click', async () => {
+        await sb.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: window.location.origin + '/dashboard' }
+        });
+    });
+
+    document.getElementById('signOutBtn').addEventListener('click', async () => {
+        await sb.auth.signOut();
+        window.location.href = '/';
+    });
+
+    document.getElementById('upgradeBtn')?.addEventListener('click', () => {
+        window.location.href = '/pricing';
+    });
+
+    init();
+</script>
 </body>
 </html>
