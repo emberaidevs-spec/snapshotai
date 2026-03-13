@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help — SnapShotAI</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #09090b; --surface: #0f0f13; --surface-2: #16161c;
+            --purple: #8b5cf6; --text: #f4f4f5; --text-secondary: #a1a1aa;
+            --text-tertiary: #71717a; --border: rgba(255,255,255,0.06);
+            --border-hover: rgba(255,255,255,0.12);
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg); color: var(--text-secondary);
+            line-height: 1.6; -webkit-font-smoothing: antialiased;
+        }
+        .container { max-width: 680px; margin: 0 auto; padding: 0 24px; }
+        h1, h2, h3 { color: var(--text); }
+        code {
+            font-family: 'JetBrains Mono', monospace; font-size: 13px;
+            background: var(--surface-2); padding: 2px 6px; border-radius: 4px;
+            color: #c084fc;
+        }
+
+        /* Nav */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(9,9,11,0.8); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-inner {
+            max-width: 680px; margin: 0 auto; padding: 14px 24px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .nav-logo {
+            font-size: 15px; font-weight: 600; color: var(--text);
+            text-decoration: none; display: flex; align-items: center; gap: 10px;
+        }
+        .nav-logo img { width: 22px; height: 22px; border-radius: 5px; }
+        .nav-links { display: flex; gap: 8px; }
+        .nav-links a {
+            color: var(--text-tertiary); text-decoration: none;
+            font-size: 13px; font-weight: 500; padding: 6px 12px;
+            border-radius: 6px; transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text-secondary); }
+        .nav-links a.active { color: var(--text); }
+
+        /* Page */
+        .page-header { padding: 120px 0 48px; }
+        .page-header h1 {
+            font-size: clamp(32px, 4vw, 44px); font-weight: 500;
+            letter-spacing: -0.03em; margin-bottom: 8px;
+        }
+        .page-header p { font-size: 15px; color: var(--text-tertiary); }
+
+        /* Sections */
+        .section { margin-bottom: 48px; }
+        .section h2 {
+            font-size: 18px; font-weight: 500; margin-bottom: 20px;
+            padding-bottom: 12px; border-bottom: 1px solid var(--border);
+        }
+
+        /* FAQ items */
+        .faq-item { margin-bottom: 24px; }
+        .faq-item h3 { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+        .faq-item p { font-size: 14px; color: var(--text-tertiary); line-height: 1.7; }
+        .faq-item p + p { margin-top: 8px; }
+
+        /* Alert/callout boxes */
+        .callout {
+            padding: 14px 16px; border-radius: 8px;
+            font-size: 13px; line-height: 1.6; margin: 12px 0;
+        }
+        .callout-info {
+            background: rgba(139,92,246,0.06); border: 1px solid rgba(139,92,246,0.1);
+            color: var(--text-secondary);
+        }
+        .callout-warn {
+            background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.1);
+            color: var(--text-secondary);
+        }
+        .callout strong { color: var(--text); }
+
+        /* Steps */
+        .steps { counter-reset: step; }
+        .step-item {
+            display: flex; gap: 14px; margin-bottom: 16px;
+            font-size: 14px; color: var(--text-secondary);
+        }
+        .step-item::before {
+            counter-increment: step; content: counter(step);
+            width: 24px; height: 24px; flex-shrink: 0;
+            background: var(--surface-2); border: 1px solid var(--border);
+            border-radius: 6px; display: flex; align-items: center;
+            justify-content: center; font-size: 12px; font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .step-item strong { color: var(--text); }
+
+        /* Image */
+        .doc-img {
+            border-radius: 8px; border: 1px solid var(--border);
+            margin: 12px 0; max-width: 100%;
+        }
+
+        /* Keyboard shortcuts table */
+        .shortcut-grid {
+            display: grid; grid-template-columns: auto 1fr;
+            gap: 1px; background: var(--border); border-radius: 8px;
+            overflow: hidden; margin: 12px 0;
+        }
+        .shortcut-cell {
+            padding: 10px 14px; font-size: 13px; background: var(--bg);
+        }
+        .shortcut-cell.header { background: var(--surface); color: var(--text); font-weight: 500; }
+        .kbd {
+            display: inline-block; padding: 2px 7px;
+            background: var(--surface-2); border: 1px solid var(--border);
+            border-radius: 4px; font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; color: var(--text-secondary);
+        }
+
+        footer {
+            border-top: 1px solid var(--border); padding: 24px 0; margin-top: 80px;
+        }
+        footer p { font-size: 13px; color: var(--text-tertiary); text-align: center; }
+
+        /* Animations */
+        .reveal {
+            opacity: 0; transform: translateY(16px);
+            transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 640px) {
+            .nav-links { display: none; }
+            .page-header { padding: 100px 0 36px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-inner">
+        <a href="/" class="nav-logo">
+            <img src="/logo-256.png" alt="SnapShotAI">
+            SnapShotAI
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/pricing">Pricing</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/docs" class="active">Help</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-header reveal">
+        <h1>Help & FAQ</h1>
+        <p>Common questions, troubleshooting, and keyboard shortcuts.</p>
+    </div>
+
+    <!-- Installation -->
+    <div class="section reveal">
+        <h2>Installation</h2>
+
+        <div class="faq-item">
+            <h3>Windows shows "Windows protected your PC" warning</h3>
+            <p>This is normal for new apps that haven't been code-signed yet. It doesn't mean the app is unsafe — Windows just doesn't recognize the publisher yet.</p>
+            <div class="callout callout-info">
+                <strong>To get past this:</strong> Click <strong>"More info"</strong> → then click <strong>"Run anyway"</strong> at the bottom. You only need to do this once.
+            </div>
+            <p>We're working on getting the app signed with a certificate so this won't appear in the future.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>Where does SnapShotAI install?</h3>
+            <p>SnapShotAI is a portable app — no installation needed. Just run the .exe from wherever you downloaded it (Downloads folder, Desktop, etc). It runs in your system tray near the clock.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>How do I uninstall it?</h3>
+            <p>Just delete the .exe file. SnapShotAI also stores a config file at <code>~/.snapshotai/config.json</code> — delete that folder too for a clean removal.</p>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts -->
+    <div class="section reveal">
+        <h2>Keyboard Shortcuts</h2>
+
+        <div class="shortcut-grid">
+            <div class="shortcut-cell header">Shortcut</div>
+            <div class="shortcut-cell header">Action</div>
+            <div class="shortcut-cell"><span class="kbd">Ctrl</span> <span class="kbd">Shift</span> <span class="kbd">S</span></div>
+            <div class="shortcut-cell">Full screen capture (invisible — nothing appears on screen)</div>
+            <div class="shortcut-cell"><span class="kbd">Ctrl</span> <span class="kbd">Shift</span> <span class="kbd">A</span></div>
+            <div class="shortcut-cell">Region capture (drag to select an area)</div>
+            <div class="shortcut-cell"><span class="kbd">Ctrl</span> <span class="kbd">Shift</span> <span class="kbd">Q</span></div>
+            <div class="shortcut-cell">Quit SnapShotAI</div>
+        </div>
+
+        <div class="faq-item">
+            <h3>Hotkeys aren't working</h3>
+            <p>Try these fixes in order:</p>
+            <div class="steps">
+                <div class="step-item">Make sure SnapShotAI is running — look for the purple ghost icon in your system tray (near the clock).</div>
+                <div class="step-item">Try <strong>right-clicking the tray icon</strong> and selecting "Full Screen Capture" to verify the app works.</div>
+                <div class="step-item">Try running the app <strong>as Administrator</strong> — right-click the .exe → "Run as administrator".</div>
+                <div class="step-item">Check if another app is using the same shortcut (some screenshot tools use Ctrl+Shift+S).</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stealth Mode -->
+    <div class="section reveal">
+        <h2>Stealth Mode</h2>
+
+        <div class="faq-item">
+            <h3>How does stealth mode work?</h3>
+            <p>SnapShotAI uses a native Windows API (<code>SetWindowDisplayAffinity</code>) to make the AI response overlay invisible to all screen capture tools — Zoom, Teams, Discord, OBS, and any screen recording software.</p>
+            <p>You see the answers on your monitor. Anyone watching via screen share sees nothing.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>Does stealth work on Mac?</h3>
+            <p>Yes. On macOS, we use <code>NSWindow.sharingType</code> to achieve the same effect.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>Can my teacher/proctor see the app running?</h3>
+            <p>The AI overlay is invisible to screen capture. However, the app does appear in your system tray and in Task Manager. If proctoring software checks running processes, it could detect the app is running.</p>
+        </div>
+    </div>
+
+    <!-- Account & Billing -->
+    <div class="section reveal">
+        <h2>Account & Billing</h2>
+
+        <div class="faq-item">
+            <h3>What do I get with the Free plan?</h3>
+            <p>15 AI-powered captures per day, follow-up questions, stealth mode, and full access to both Windows and Mac apps. Resets at midnight UTC.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>What does Pro include?</h3>
+            <p>Unlimited captures, priority AI responses, capture history, and early access to new features. $5.99/month, cancel anytime.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>How do I sign out or switch accounts?</h3>
+            <p>Right-click the tray icon and select "Sign Out", or delete <code>~/.snapshotai/config.json</code> and restart the app.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>Is my data private?</h3>
+            <p>Yes. Screenshots are sent to our AI server, analyzed, and immediately discarded. We never store your images. Your account data (email, usage count) is stored securely in Supabase.</p>
+        </div>
+    </div>
+
+    <!-- Troubleshooting -->
+    <div class="section reveal">
+        <h2>Troubleshooting</h2>
+
+        <div class="faq-item">
+            <h3>AI response says "Error" or doesn't appear</h3>
+            <div class="steps">
+                <div class="step-item">Check your internet connection.</div>
+                <div class="step-item">Make sure you're signed in — right-click the tray icon to check.</div>
+                <div class="step-item">If you're on the Free plan, you may have hit the 15/day limit. Check your <a href="/dashboard" style="color:#8b5cf6;">dashboard</a>.</div>
+                <div class="step-item">Try quitting and reopening the app.</div>
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <h3>App doesn't start or crashes immediately</h3>
+            <p>Make sure you're running Windows 10 or later (64-bit). If the app won't open, try running it from Command Prompt to see error messages:</p>
+            <div class="callout callout-info">
+                Open Command Prompt → drag the .exe into the window → press Enter. Any error messages will appear in the terminal.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <h3>Need more help?</h3>
+            <p>Reach out on <a href="https://twitter.com/EmberdevAi" style="color:#8b5cf6;">Twitter @EmberdevAi</a> and we'll help you out.</p>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>© 2026 SnapShotAI</p>
+</footer>
+
+<script>
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
