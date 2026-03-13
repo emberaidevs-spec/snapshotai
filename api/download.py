@@ -1,4 +1,4 @@
-"""Redirect to download server"""
+"""Redirect downloads to Hetzner file server"""
 from http.server import BaseHTTPRequestHandler
 import urllib.parse
 
@@ -11,10 +11,12 @@ class handler(BaseHTTPRequestHandler):
         
         if file not in ('SnapShotAI.exe', 'SnapShotAI.dmg'):
             self.send_response(400)
+            self.send_header('Content-Type', 'text/plain')
             self.end_headers()
-            self.wfile.write(b'Invalid file')
+            self.wfile.write(b'Invalid file parameter')
             return
         
         self.send_response(302)
         self.send_header('Location', f'{DOWNLOAD_BASE}/{file}')
+        self.send_header('Cache-Control', 'no-cache')
         self.end_headers()
