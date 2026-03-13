@@ -307,9 +307,9 @@ class ResultOverlay(QWidget):
     
     STYLE = f"""
         QWidget#resultWindow {{
-            background-color: {SURFACE};
-            border: 1px solid rgba(139,92,246,0.3);
-            border-radius: 16px;
+            background-color: {BG};
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
             color: {TEXT};
             font-family: 'Segoe UI', 'SF Pro Display', system-ui, sans-serif;
         }}
@@ -320,20 +320,31 @@ class ResultOverlay(QWidget):
         self.setObjectName("resultWindow")
         flags = (Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool) if PYQT6 else (Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setWindowFlags(flags)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground if PYQT6 else Qt.WA_TranslucentBackground)
         
-        self.setFixedWidth(440)
-        self.setMinimumHeight(260)
-        self.setMaximumHeight(560)
+        self.setFixedWidth(420)
+        self.setMinimumHeight(240)
+        self.setMaximumHeight(520)
         self.setStyleSheet(self.STYLE)
         
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(18, 14, 18, 14)
-        layout.setSpacing(10)
+        layout.setContentsMargins(16, 12, 16, 12)
+        layout.setSpacing(8)
         
         # Header
         header = QHBoxLayout()
-        title = QLabel("📸 SnapShotAI")
-        title.setStyleSheet(f"font-size: 15px; font-weight: bold; color: {PURPLE}; border: none; background: transparent;")
+        header.setSpacing(8)
+        
+        # Logo icon
+        logo_label = QLabel()
+        logo_pm = QPixmap()
+        logo_pm.loadFromData(base64.b64decode(LOGO_B64_DATA))
+        logo_label.setPixmap(logo_pm.scaled(18, 18, Qt.AspectRatioMode.KeepAspectRatio if PYQT6 else Qt.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation if PYQT6 else Qt.SmoothTransformation))
+        logo_label.setStyleSheet("border: none; background: transparent;")
+        header.addWidget(logo_label)
+        
+        title = QLabel("SnapShotAI")
+        title.setStyleSheet(f"font-size: 13px; font-weight: 500; color: {TEXT}; border: none; background: transparent;")
         header.addWidget(title)
         
         self.status_label = QLabel("")
@@ -341,56 +352,69 @@ class ResultOverlay(QWidget):
         header.addWidget(self.status_label)
         header.addStretch()
         
-        dash_btn = QPushButton("👤")
-        dash_btn.setFixedSize(28, 28)
-        dash_btn.setToolTip("Open Dashboard")
+        dash_btn = QPushButton("Dashboard")
+        dash_btn.setFixedHeight(24)
         dash_btn.setStyleSheet(f"""
-            QPushButton {{ background: rgba(139,92,246,0.12); border: none; border-radius: 14px; color: {PURPLE}; font-size: 13px; }}
-            QPushButton:hover {{ background: rgba(139,92,246,0.25); }}
+            QPushButton {{ background: transparent; border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; color: {CAPTION}; font-size: 11px; padding: 0 10px; }}
+            QPushButton:hover {{ border-color: rgba(255,255,255,0.12); color: {BODY}; }}
         """)
         dash_btn.clicked.connect(lambda: webbrowser.open("https://snapshotai-beta.vercel.app/dashboard"))
         header.addWidget(dash_btn)
         
         close_btn = QPushButton("✕")
-        close_btn.setFixedSize(28, 28)
+        close_btn.setFixedSize(24, 24)
         close_btn.setStyleSheet(f"""
-            QPushButton {{ background: rgba(248,113,113,0.12); border: none; border-radius: 14px; color: #f87171; font-size: 14px; }}
-            QPushButton:hover {{ background: rgba(248,113,113,0.3); }}
+            QPushButton {{ background: transparent; border: none; border-radius: 12px; color: {CAPTION}; font-size: 13px; }}
+            QPushButton:hover {{ color: #f87171; background: rgba(248,113,113,0.1); }}
         """)
         close_btn.clicked.connect(self.hide)
         header.addWidget(close_btn)
         layout.addLayout(header)
+        
+        # Divider
+        divider = QFrame()
+        divider.setFixedHeight(1)
+        divider.setStyleSheet("background: rgba(255,255,255,0.06); border: none;")
+        layout.addWidget(divider)
         
         # Response
         self.response = QTextEdit()
         self.response.setReadOnly(True)
         self.response.setStyleSheet(f"""
             QTextEdit {{
-                background: {BG}; border: 1px solid rgba(139,92,246,0.12);
-                border-radius: 10px; color: {TEXT}; font-size: 13px; padding: 12px; line-height: 1.6;
+                background: {SURFACE}; border: 1px solid rgba(255,255,255,0.06);
+                border-radius: 8px; color: {TEXT}; font-size: 13px; padding: 12px;
+            }}
+            QTextEdit QScrollBar:vertical {{
+                width: 4px; background: transparent;
+            }}
+            QTextEdit QScrollBar::handle:vertical {{
+                background: rgba(255,255,255,0.1); border-radius: 2px;
             }}
         """)
         layout.addWidget(self.response)
         
         # Input
         input_row = QHBoxLayout()
+        input_row.setSpacing(8)
         self.input = QLineEdit()
-        self.input.setPlaceholderText("Ask a follow-up question...")
+        self.input.setPlaceholderText("Ask a follow-up...")
+        self.input.setFixedHeight(36)
         self.input.setStyleSheet(f"""
             QLineEdit {{
-                background: {BG}; border: 1px solid rgba(139,92,246,0.2);
-                border-radius: 10px; color: {TEXT}; font-size: 13px; padding: 10px 14px;
+                background: {SURFACE}; border: 1px solid rgba(255,255,255,0.06);
+                border-radius: 8px; color: {TEXT}; font-size: 13px; padding: 0 12px;
             }}
-            QLineEdit:focus {{ border-color: {PURPLE}; }}
+            QLineEdit:focus {{ border-color: rgba(255,255,255,0.12); }}
         """)
         self.input.returnPressed.connect(self.ask)
         input_row.addWidget(self.input)
         
-        send_btn = QPushButton("→")
-        send_btn.setFixedSize(40, 38)
+        send_btn = QPushButton("↑")
+        send_btn.setFixedSize(36, 36)
         send_btn.setStyleSheet(f"""
-            QPushButton {{ background: {PURPLE}; border: none; border-radius: 10px; color: white; font-size: 16px; font-weight: bold; }}
-            QPushButton:hover {{ background: {PURPLE_DARK}; }}
+            QPushButton {{ background: {TEXT}; border: none; border-radius: 8px; color: {BG}; font-size: 16px; font-weight: 600; }}
+            QPushButton:hover {{ background: #e4e4e7; }}
         """)
         send_btn.clicked.connect(self.ask)
         input_row.addWidget(send_btn)
