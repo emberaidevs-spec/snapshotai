@@ -110,9 +110,10 @@ def analyze(image_b64, question):
         
         print(f"[Analyze] Image: {len(image_data)//1024}KB ({mime})")
         
+        system = "You are a concise AI assistant. Give direct, short answers. No introductions, no filler. If it's a question, answer it. If it's code with a bug, state the bug and fix briefly. If it's homework, give the answer with minimal steps. Stay under 100 words unless the question truly needs more."
         response = model.generate_content(
-            [{'mime_type': mime, 'data': image_data}, question],
-            generation_config={'max_output_tokens': 1024}
+            [system, {'mime_type': mime, 'data': image_data}, question],
+            generation_config={'max_output_tokens': 512}
         )
         return response.text
     except Exception as e:
@@ -155,7 +156,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(400, {'error': 'Invalid request'})
 
         image_b64 = body.get('image', '')
-        question = body.get('question', "What's on this screen? Explain clearly. If code, explain it and flag bugs. If an error, explain how to fix it. If homework, help solve step by step.")
+        question = body.get('question', "Give a direct, concise answer. No fluff. Under 100 words.")
 
         if not image_b64:
             return self._json(400, {'error': 'No image'})
