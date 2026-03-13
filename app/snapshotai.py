@@ -790,72 +790,65 @@ class SnapShotAI:
         self._show_login()
     
     def _setup_hotkeys(self):
-        """Register global hotkeys using pynput key listener"""
-        try:
-            from pynput import keyboard as pynput_kb
-            
-            self._pressed_keys = set()
-            
-            def on_press(key):
-                try:
-                    # Normalize key
-                    if hasattr(key, 'vk'):
-                        self._pressed_keys.add(key.vk)
-                    if key == pynput_kb.Key.ctrl_l or key == pynput_kb.Key.ctrl_r:
-                        self._pressed_keys.add('ctrl')
-                    elif key == pynput_kb.Key.shift or key == pynput_kb.Key.shift_l or key == pynput_kb.Key.shift_r:
-                        self._pressed_keys.add('shift')
-                    elif hasattr(key, 'char') and key.char:
-                        self._pressed_keys.add(key.char.lower())
-                    
-                    # Check combos
-                    if 'ctrl' in self._pressed_keys and 'shift' in self._pressed_keys:
-                        if 's' in self._pressed_keys:
-                            self._pressed_keys.clear()
-                            QTimer.singleShot(0, self.full_capture)
-                        elif 'a' in self._pressed_keys:
-                            self._pressed_keys.clear()
-                            QTimer.singleShot(0, self.start_capture)
-                        elif 'q' in self._pressed_keys:
-                            self._pressed_keys.clear()
-                            QTimer.singleShot(0, self.quit)
-                except:
-                    pass
-            
-            def on_release(key):
-                try:
-                    if hasattr(key, 'vk') and key.vk in self._pressed_keys:
-                        self._pressed_keys.discard(key.vk)
-                    if key == pynput_kb.Key.ctrl_l or key == pynput_kb.Key.ctrl_r:
-                        self._pressed_keys.discard('ctrl')
-                    elif key == pynput_kb.Key.shift or key == pynput_kb.Key.shift_l or key == pynput_kb.Key.shift_r:
-                        self._pressed_keys.discard('shift')
-                    elif hasattr(key, 'char') and key.char:
-                        self._pressed_keys.discard(key.char.lower())
-                except:
-                    pass
-            
-            self._key_listener = pynput_kb.Listener(on_press=on_press, on_release=on_release)
-            self._key_listener.start()
-            print("[Hotkeys] ✅ Registered via pynput Listener:")
+        """Register global hotkeys by polling Windows key state directly"""
+        if platform.system() == 'Windows':
+            self._hotkey_timer = QTimer()
+            self._hotkey_timer.timeout.connect(self._poll_hotkeys)
+            self._hotkey_timer.start(100)  # Check every 100ms
+            self._hotkey_cooldown = False
+            print("[Hotkeys] ✅ Polling via GetAsyncKeyState (100ms):")
             print("[Hotkeys]   Ctrl+Shift+S → Full screen capture")
-            print("[Hotkeys]   Ctrl+Shift+A → Region capture") 
+            print("[Hotkeys]   Ctrl+Shift+A → Region capture")
             print("[Hotkeys]   Ctrl+Shift+Q → Quit")
-        except Exception as e:
-            print(f"[Hotkeys] pynput failed: {e}, trying keyboard library...")
+        else:
             try:
-                import keyboard
-                keyboard.add_hotkey('ctrl+shift+s', lambda: QTimer.singleShot(0, self.full_capture))
-                keyboard.add_hotkey('ctrl+shift+a', lambda: QTimer.singleShot(0, self.start_capture))
-                keyboard.add_hotkey('ctrl+shift+q', lambda: QTimer.singleShot(0, self.quit))
-                print("[Hotkeys] Registered via keyboard library (fallback)")
-            except Exception as e2:
-                print(f"[Hotkeys] All methods failed: {e2}")
+                from pynput import keyboard as pynput_kb
+                self._hotkey_listener = pynput_kb.GlobalHotKeys({
+                    '<ctrl>+<shift>+s': lambda: QTimer.singleShot(0, self.full_capture),
+                    '<ctrl>+<shift>+a': lambda: QTimer.singleShot(0, self.start_capture),
+                    '<ctrl>+<shift>+q': lambda: QTimer.singleShot(0, self.quit),
+                })
+                self._hotkey_listener.start()
+                print("[Hotkeys] Registered via pynput")
+            except:
+                print("[Hotkeys] Could not register hotkeys")
+    
+    def _poll_hotkeys(self):
+        """Poll keyboard state using Win32 GetAsyncKeyState"""
+        if self._hotkey_cooldown:
+            return
+        
+        user32 = ctypes.windll.user32
+        # Check if Ctrl AND Shift are held (high bit = 0x8000 means pressed)
+        ctrl = user32.GetAsyncKeyState(0x11) & 0x8000   # VK_CONTROL
+        shift = user32.GetAsyncKeyState(0x10) & 0x8000   # VK_SHIFT
+        
+        if ctrl and shift:
+            s_key = user32.GetAsyncKeyState(0x53) & 0x8000  # S
+            a_key = user32.GetAsyncKeyState(0x41) & 0x8000  # A
+            q_key = user32.GetAsyncKeyState(0x51) & 0x8000  # Q
+            
+            if s_key:
+                print("[Hotkey] Ctrl+Shift+S detected!")
+                self._hotkey_cooldown = True
+                QTimer.singleShot(1000, self._reset_cooldown)
+                self.full_capture()
+            elif a_key:
+                print("[Hotkey] Ctrl+Shift+A detected!")
+                self._hotkey_cooldown = True
+                QTimer.singleShot(1000, self._reset_cooldown)
+                self.start_capture()
+            elif q_key:
+                print("[Hotkey] Ctrl+Shift+Q detected!")
+                self.quit()
+    
+    def _reset_cooldown(self):
+        self._hotkey_cooldown = False
     
     def quit(self):
         try:
-            if hasattr(self, '_key_listener'):
-                self._key_listener.stop()
+            if hasattr(self, '_hotkey_timer'):
+                self._hotkey_timer.stop()
         except:
             pass
         self.tray.hide()
