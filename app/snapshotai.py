@@ -450,7 +450,7 @@ class ResultOverlay(QWidget):
         self.move(max(0, x), max(0, y))
         
         threading.Thread(target=self._run_analysis,
-                        args=("Look at this screenshot and give a direct, concise answer. No fluff, no introductions. If it's a question or problem, just give the answer. If it's code with a bug, state the bug and fix in 1-2 lines. If it's homework, give the solution steps briefly. Keep it short — under 100 words unless complexity demands more.",),
+                        args=("Answer only. No explanations. Just the answer.",),
                         daemon=True).start()
     
     def _run_analysis(self, question):

@@ -330,8 +330,8 @@
         </div>
 
         <div class="card upgrade-card" id="upgradeCard">
-            <h3>Upgrade to Pro</h3>
-            <p>Unlimited captures, priority AI, and capture history. $5.99/mo.</p>
+            <h3 id="upgradeTitle">Upgrade to Pro</h3>
+            <p id="upgradeDesc">Unlimited captures, priority AI, and capture history. $5.99/mo.</p>
             <button class="btn btn-purple" id="upgradeBtn">Go Pro</button>
         </div>
     </div>
@@ -412,7 +412,13 @@
             ? '<span class="badge badge-pro">Pro</span>' 
             : '<span class="badge badge-free">Free</span>';
 
-        document.getElementById('upgradeCard').style.display = isPro ? 'none' : 'block';
+        if (isPro) {
+            document.getElementById('upgradeTitle').textContent = 'Pro Plan Active';
+            document.getElementById('upgradeDesc').textContent = 'Manage your subscription, update payment method, or cancel.';
+            document.getElementById('upgradeBtn').textContent = 'Manage Subscription';
+            document.getElementById('upgradeBtn').className = 'btn btn-secondary';
+            document.getElementById('upgradeCard').dataset.isPro = 'true';
+        }
     }
 
     document.getElementById('googleSignIn').addEventListener('click', async () => {
@@ -427,8 +433,31 @@
         window.location.href = '/';
     });
 
-    document.getElementById('upgradeBtn')?.addEventListener('click', () => {
-        window.location.href = '/pricing';
+    document.getElementById('upgradeBtn')?.addEventListener('click', async () => {
+        const card = document.getElementById('upgradeCard');
+        const btn = document.getElementById('upgradeBtn');
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) return;
+
+        if (card.dataset.isPro === 'true') {
+            // Pro user — open billing portal
+            btn.textContent = 'Loading...';
+            btn.disabled = true;
+            try {
+                const resp = await fetch('http://5.78.191.207:8765/api/portal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: session.user.id })
+                });
+                const data = await resp.json();
+                if (data.url) window.location.href = data.url;
+                else alert(data.error || 'Error opening billing portal');
+            } catch (e) { alert('Connection error'); }
+            btn.textContent = 'Manage Subscription';
+            btn.disabled = false;
+        } else {
+            window.location.href = '/pricing';
+        }
     });
 
     init();

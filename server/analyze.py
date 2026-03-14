@@ -110,7 +110,7 @@ def analyze(image_b64, question):
         
         print(f"[Analyze] Image: {len(image_data)//1024}KB ({mime})")
         
-        system = "You are a concise AI assistant. Give direct, short answers. No introductions, no filler. If it's a question, answer it. If it's code with a bug, state the bug and fix briefly. If it's homework, give the answer with minimal steps. Stay under 100 words unless the question truly needs more."
+        system = "Answer only. No explanations, no steps, no context. Just the answer. If it's a question, give the answer. If it's multiple choice, give the letter. If it's math, give the number. If it's code, give the fix. Nothing else."
         response = model.generate_content(
             [system, {'mime_type': mime, 'data': image_data}, question],
             generation_config={'max_output_tokens': 512}
@@ -130,6 +130,12 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == '/api/screenshot':
             self._handle_screenshot()
+        elif self.path == '/api/checkout':
+            self._handle_stripe('checkout')
+        elif self.path == '/api/portal':
+            self._handle_stripe('portal')
+        elif self.path == '/api/webhook':
+            self._handle_stripe('webhook')
         else:
             self._json(404, {'error': 'Not found'})
 
@@ -138,6 +144,30 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, {'status': 'ok', 'model': MODEL})
         else:
             self._json(404, {'error': 'Not found'})
+
+    def _handle_stripe(self, action):
+        from stripe_handler import handle_checkout, handle_portal, handle_webhook
+        
+        length = int(self.headers.get('Content-Length', 0))
+        body_raw = self.rfile.read(length)
+        
+        if action == 'webhook':
+            sig = self.headers.get('Stripe-Signature', '')
+            code, data = handle_webhook(body_raw, sig)
+        else:
+            try:
+                body = json.loads(body_raw)
+            except:
+                return self._json(400, {'error': 'Invalid JSON'})
+            
+            if action == 'checkout':
+                code, data = handle_checkout(body)
+            elif action == 'portal':
+                code, data = handle_portal(body)
+            else:
+                return self._json(404, {'error': 'Unknown action'})
+        
+        self._json(code, data)
 
     def _handle_screenshot(self):
         auth = self.headers.get('Authorization', '')

@@ -309,7 +309,7 @@
                     </li>
                 </ul>
                 <div class="plan-cta">
-                    <a href="/#download" class="btn btn-purple">Go Pro</a>
+                    <button onclick="upgradeToPro()" class="btn btn-purple" id="goProBtn">Go Pro</button>
                 </div>
             </div>
         </div>
@@ -372,6 +372,55 @@
         });
     }, { threshold: 0.1 });
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Supabase config
+    const SUPABASE_URL = 'https://xiwfuenqxyfzadggakip.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpd2Z1ZW5xeHlmemFkZ2dha2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzYxNDQsImV4cCI6MjA4ODkxMjE0NH0.leYWfPUg8NLIA3YcFEH5w_gbuVMLw-Z6OVu7_tme4QA';
+    const API_BASE = 'http://5.78.191.207:8765';
+
+    async function upgradeToPro() {
+        const btn = document.getElementById('goProBtn');
+        btn.textContent = 'Loading...';
+        btn.disabled = true;
+
+        try {
+            // Check if user is logged in
+            const stored = localStorage.getItem(`sb-xiwfuenqxyfzadggakip-auth-token`);
+            if (!stored) {
+                alert('Please sign in first! Download the app or visit the dashboard to create an account.');
+                btn.textContent = 'Go Pro';
+                btn.disabled = false;
+                return;
+            }
+
+            const session = JSON.parse(stored);
+            const token = session.access_token;
+            const user = session.user;
+
+            // Call checkout endpoint
+            const resp = await fetch(`${API_BASE}/api/checkout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: user.id,
+                    email: user.email
+                })
+            });
+
+            const data = await resp.json();
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                alert(data.error || 'Something went wrong');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Connection error. Please try again.');
+        }
+
+        btn.textContent = 'Go Pro';
+        btn.disabled = false;
+    }
 </script>
 </body>
 </html>
