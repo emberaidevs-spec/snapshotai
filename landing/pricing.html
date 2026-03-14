@@ -376,8 +376,6 @@
     // Supabase config
     const SUPABASE_URL = 'https://xiwfuenqxyfzadggakip.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpd2Z1ZW5xeHlmemFkZ2dha2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzYxNDQsImV4cCI6MjA4ODkxMjE0NH0.leYWfPUg8NLIA3YcFEH5w_gbuVMLw-Z6OVu7_tme4QA';
-    const API_BASE = 'http://5.78.191.207:8765';
-
     async function upgradeToPro() {
         const btn = document.getElementById('goProBtn');
         btn.textContent = 'Loading...';
@@ -398,7 +396,7 @@
             const user = session.user;
 
             // Call checkout endpoint
-            const resp = await fetch(`${API_BASE}/api/checkout`, {
+            const resp = await fetch('/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

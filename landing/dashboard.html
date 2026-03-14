@@ -444,7 +444,7 @@
             btn.textContent = 'Loading...';
             btn.disabled = true;
             try {
-                const resp = await fetch('http://5.78.191.207:8765/api/portal', {
+                const resp = await fetch('/api/portal', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: session.user.id })
