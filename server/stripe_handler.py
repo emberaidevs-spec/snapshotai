@@ -19,60 +19,30 @@ SITE_URL = 'https://snapshotai-beta.vercel.app'
 
 
 def update_subscription_status(user_id, plan, stripe_customer_id=None, stripe_subscription_id=None):
-    """Update user's subscription in Supabase"""
+    """Upsert user's subscription in Supabase"""
     try:
-        # Upsert into snapshotai_subscriptions
-        data = {
+        url = f"{SUPABASE_URL}/rest/v1/snapshotai_subscriptions"
+        
+        upsert_data = {
             'user_id': user_id,
             'plan': plan,
-            'updated_at': 'now()'
+            'status': 'active' if plan == 'pro' else 'inactive',
         }
         if stripe_customer_id:
-            data['stripe_customer_id'] = stripe_customer_id
+            upsert_data['stripe_customer_id'] = stripe_customer_id
         if stripe_subscription_id:
-            data['stripe_subscription_id'] = stripe_subscription_id
-
-        url = f"{SUPABASE_URL}/rest/v1/snapshotai_subscriptions?user_id=eq.{user_id}"
+            upsert_data['stripe_subscription_id'] = stripe_subscription_id
         
-        # Try update first
-        req = urllib.request.Request(url, method='PATCH')
+        req = urllib.request.Request(url, method='POST')
         req.add_header('apikey', SUPABASE_SERVICE_KEY)
         req.add_header('Authorization', f'Bearer {SUPABASE_SERVICE_KEY}')
         req.add_header('Content-Type', 'application/json')
-        req.add_header('Prefer', 'return=minimal')
-        
-        patch_data = {'plan': plan}
-        if stripe_customer_id:
-            patch_data['stripe_customer_id'] = stripe_customer_id
-        if stripe_subscription_id:
-            patch_data['stripe_subscription_id'] = stripe_subscription_id
-            
-        req.data = json.dumps(patch_data).encode()
+        req.add_header('Prefer', 'resolution=merge-duplicates,return=minimal')
+        req.data = json.dumps(upsert_data).encode()
         urllib.request.urlopen(req, timeout=5)
-        print(f"[Stripe] Updated user {user_id} to {plan}")
+        print(f"[Stripe] Upserted user {user_id} to {plan}")
     except Exception as e:
-        print(f"[Stripe] Error updating subscription: {e}")
-        # Try insert if update failed
-        try:
-            url = f"{SUPABASE_URL}/rest/v1/snapshotai_subscriptions"
-            req = urllib.request.Request(url, method='POST')
-            req.add_header('apikey', SUPABASE_SERVICE_KEY)
-            req.add_header('Authorization', f'Bearer {SUPABASE_SERVICE_KEY}')
-            req.add_header('Content-Type', 'application/json')
-            req.add_header('Prefer', 'return=minimal')
-            insert_data = {
-                'user_id': user_id,
-                'plan': plan,
-            }
-            if stripe_customer_id:
-                insert_data['stripe_customer_id'] = stripe_customer_id
-            if stripe_subscription_id:
-                insert_data['stripe_subscription_id'] = stripe_subscription_id
-            req.data = json.dumps(insert_data).encode()
-            urllib.request.urlopen(req, timeout=5)
-            print(f"[Stripe] Inserted subscription for user {user_id}")
-        except Exception as e2:
-            print(f"[Stripe] Insert also failed: {e2}")
+        print(f"[Stripe] Error upserting subscription: {e}")
 
 
 def get_user_by_stripe_customer(customer_id):
