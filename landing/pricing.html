@@ -397,7 +397,7 @@
             const user = session.user;
 
             // Call checkout endpoint
-            const resp = await fetch('http://5.78.191.207:8765/api/checkout', {
+            const resp = await fetch('https://api.snapshotai.app/api/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
