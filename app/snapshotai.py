@@ -611,7 +611,7 @@ class LoginWindow(QWidget):
         layout.addStretch()
         
         # Footer
-        footer = QLabel(f"Free: 15 captures/day  ·  Pro: $5.99/mo")
+        footer = QLabel(f"Free: 15 captures/month  ·  Pro: $5.99/mo")
         footer.setStyleSheet(f"font-size: 11px; color: {CAPTION}; border: none; background: transparent;")
         footer.setAlignment(Qt.AlignmentFlag.AlignCenter if PYQT6 else Qt.AlignCenter)
         layout.addWidget(footer)

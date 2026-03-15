@@ -371,13 +371,12 @@
             if (sub && sub.plan) plan = sub.plan;
         } catch (e) {}
         try {
-            const today = new Date().toISOString().split('T')[0];
+            const firstOfMonth = new Date().toISOString().slice(0, 8) + '01';
             const { data: usageData } = await sb.from('snapshotai_usage')
                 .select('count')
                 .eq('user_id', session.user.id)
-                .eq('date', today)
-                .single();
-            if (usageData) usage = usageData.count;
+                .gte('date', firstOfMonth);
+            if (usageData) usage = usageData.reduce((sum, row) => sum + row.count, 0);
         } catch (e) {}
         
         const isPro = plan === 'pro';
@@ -417,7 +416,7 @@
 
         document.getElementById('planValue').textContent = isPro ? 'Pro' : 'Free';
         document.getElementById('planValue').style.color = isPro ? '#22c55e' : '#8b5cf6';
-        document.getElementById('planSub').textContent = isPro ? '$5.99/mo' : '15/day limit';
+        document.getElementById('planSub').textContent = isPro ? '$5.99/mo' : '15/month limit';
 
         if (isPro) {
             document.getElementById('usageBarCard').style.display = 'none';

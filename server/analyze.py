@@ -28,7 +28,7 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
 SUPABASE_URL = os.getenv('SNAPSHOTAI_SUPABASE_URL', '')
 SUPABASE_ANON_KEY = os.getenv('SNAPSHOTAI_SUPABASE_ANON_KEY', '')
 SUPABASE_SERVICE_KEY = os.getenv('SNAPSHOTAI_SUPABASE_SERVICE_KEY', '')
-FREE_DAILY_LIMIT = 15
+FREE_MONTHLY_LIMIT = 15
 PORT = 8765
 MODEL = 'gemini-2.5-flash'
 
@@ -52,15 +52,16 @@ def verify_user(token):
 
 
 def get_usage(user_id):
+    """Get total usage for the current month"""
     try:
-        today = time.strftime('%Y-%m-%d')
-        url = f"{SUPABASE_URL}/rest/v1/snapshotai_usage?user_id=eq.{user_id}&date=eq.{today}&select=count"
+        first_of_month = time.strftime('%Y-%m-01')
+        url = f"{SUPABASE_URL}/rest/v1/snapshotai_usage?user_id=eq.{user_id}&date=gte.{first_of_month}&select=count"
         req = urllib.request.Request(url)
         req.add_header('apikey', SUPABASE_SERVICE_KEY)
         req.add_header('Authorization', f'Bearer {SUPABASE_SERVICE_KEY}')
         resp = urllib.request.urlopen(req, timeout=5)
         data = json.loads(resp.read())
-        return data[0]['count'] if data else 0
+        return sum(row['count'] for row in data) if data else 0
     except:
         return 0
 
@@ -166,8 +167,8 @@ class Handler(BaseHTTPRequestHandler):
             'email': email,
             'plan': 'pro' if pro else 'free',
             'usage_today': usage,
-            'limit': 'unlimited' if pro else FREE_DAILY_LIMIT,
-            'remaining': 'unlimited' if pro else max(0, FREE_DAILY_LIMIT - usage)
+            'limit': 'unlimited' if pro else FREE_MONTHLY_LIMIT,
+            'remaining': 'unlimited' if pro else max(0, FREE_MONTHLY_LIMIT - usage)
         })
 
     def _handle_stripe(self, action):
@@ -221,7 +222,7 @@ class Handler(BaseHTTPRequestHandler):
 
         if not pro:
             usage = get_usage(user_id)
-            if usage >= FREE_DAILY_LIMIT:
+            if usage >= FREE_MONTHLY_LIMIT:
                 return self._json(429, {'error': 'Daily limit reached! Upgrade to Pro.', 'remaining': 0})
 
         print(f"[Request] User: {user.get('email', '?')} | Pro: {pro}")
@@ -229,7 +230,7 @@ class Handler(BaseHTTPRequestHandler):
         result = analyze(image_b64, question)
         increment_usage(user_id)
 
-        remaining = 'unlimited' if pro else FREE_DAILY_LIMIT - get_usage(user_id)
+        remaining = 'unlimited' if pro else FREE_MONTHLY_LIMIT - get_usage(user_id)
         self._json(200, {'result': result, 'remaining': remaining})
 
     def _json(self, code, data):
