@@ -1,15 +1,17 @@
 {
   "buildCommand": "",
-  "outputDirectory": "landing",
-
+  "functions": {
+    "api/*.py": {
+      "runtime": "@vercel/python",
+      "maxDuration": 10
+    }
+  },
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" },
-    { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/pricing", "destination": "/pricing.html" },
-    { "source": "/docs", "destination": "/docs.html" },
-    { "source": "/help", "destination": "/docs.html" },
-    { "source": "/downloads/SnapShotAI.exe", "destination": "/api/download?file=SnapShotAI.exe" },
-    { "source": "/downloads/SnapShotAI.dmg", "destination": "/api/download?file=SnapShotAI.dmg" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/dashboard", "destination": "/landing/dashboard.html" },
+    { "source": "/pricing", "destination": "/landing/pricing.html" },
+    { "source": "/docs", "destination": "/landing/docs.html" },
+    { "source": "/help", "destination": "/landing/docs.html" },
+    { "source": "/(.*)", "destination": "/landing/index.html" }
   ]
 }
