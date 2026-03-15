@@ -2,6 +2,7 @@
   "buildCommand": "",
   "outputDirectory": "landing",
   "rewrites": [
+    { "source": "/terms", "destination": "/terms.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/pricing", "destination": "/pricing.html" },
     { "source": "/docs", "destination": "/docs.html" },

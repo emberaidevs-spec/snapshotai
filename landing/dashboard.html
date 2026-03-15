@@ -234,6 +234,10 @@
         <form id="emailAuthForm" style="max-width:320px;margin:0 auto 20px;display:flex;flex-direction:column;gap:12px;">
             <input type="email" id="authEmail" placeholder="Email" required style="padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;outline:none;">
             <input type="password" id="authPassword" placeholder="Password (min 6 characters)" required minlength="6" style="padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;outline:none;">
+            <label id="termsLabel" style="display:none;font-size:12px;color:var(--text-tertiary);align-items:center;gap:8px;cursor:pointer;">
+                <input type="checkbox" id="termsCheck" style="accent-color:var(--purple);width:16px;height:16px;cursor:pointer;">
+                I agree to the <a href="/terms" target="_blank" style="color:var(--purple);">Terms of Service</a>
+            </label>
             <button type="submit" class="btn btn-primary" id="emailAuthBtn" style="justify-content:center;">Sign In</button>
             <div id="authError" style="color:var(--red);font-size:13px;text-align:center;display:none;"></div>
             <div id="authSuccess" style="color:var(--green);font-size:13px;text-align:center;display:none;"></div>
@@ -251,6 +255,7 @@
                 Continue with Google
             </button>
         </div>
+        <p style="max-width:320px;margin:12px auto 0;font-size:11px;color:var(--text-tertiary);text-align:center;">By signing in, you agree to our <a href="/terms" style="color:var(--purple);">Terms of Service</a>.</p>
         <div style="margin-top:16px;text-align:center;">
             <a href="/" class="btn btn-secondary" style="font-size:13px;padding:8px 16px;">Back to home</a>
         </div>
@@ -478,6 +483,7 @@
                 t.classList.toggle('active', active);
             });
             document.getElementById('emailAuthBtn').textContent = authMode === 'login' ? 'Sign In' : 'Create Account';
+            document.getElementById('termsLabel').style.display = authMode === 'signup' ? 'flex' : 'none';
             document.getElementById('authError').style.display = 'none';
             document.getElementById('authSuccess').style.display = 'none';
         });
@@ -495,6 +501,14 @@
         successEl.style.display = 'none';
         btn.disabled = true;
         btn.textContent = authMode === 'login' ? 'Signing in...' : 'Creating account...';
+
+        if (authMode === 'signup' && !document.getElementById('termsCheck').checked) {
+            errEl.textContent = 'You must agree to the Terms of Service to create an account.';
+            errEl.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Create Account';
+            return;
+        }
 
         try {
             let result;
