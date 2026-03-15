@@ -3,8 +3,7 @@
   "outputDirectory": "landing",
   "functions": {
     "api/*.py": {
-      "runtime": "@vercel/python@4.6.0",
-      "maxDuration": 60
+      "maxDuration": 10
     }
   },
   "rewrites": [
