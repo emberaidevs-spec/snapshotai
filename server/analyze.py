@@ -240,6 +240,9 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(data).encode())
 
     def _cors(self):
+        # CORS handled by nginx reverse proxy — skip when behind it
+        if self.headers.get('X-Real-IP'):
+            return
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')

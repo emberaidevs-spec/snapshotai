@@ -473,9 +473,14 @@
                     body: JSON.stringify({ user_id: session.user.id })
                 });
                 const data = await resp.json();
-                if (data.url) window.location.href = data.url;
-                else alert(data.error || 'Error opening billing portal');
-            } catch (e) { alert('Connection error'); }
+                if (data.url) {
+                    window.location.href = data.url;
+                } else if (data.error === 'No subscription found') {
+                    alert('Your Pro plan was activated manually. Contact support to manage your subscription.');
+                } else {
+                    alert(data.error || 'Error opening billing portal');
+                }
+            } catch (e) { alert('Connection error — please try again'); }
             btn.textContent = 'Manage Subscription';
             btn.disabled = false;
         } else {
