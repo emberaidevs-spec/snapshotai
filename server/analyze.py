@@ -142,8 +142,33 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/health':
             self._json(200, {'status': 'ok', 'model': MODEL})
+        elif self.path.startswith('/api/status'):
+            self._handle_status()
         else:
             self._json(404, {'error': 'Not found'})
+
+    def _handle_status(self):
+        auth = self.headers.get('Authorization', '')
+        if not auth.startswith('Bearer '):
+            return self._json(401, {'error': 'Unauthorized'})
+        
+        token = auth[7:]
+        user = verify_user(token)
+        if not user:
+            return self._json(401, {'error': 'Invalid token'})
+        
+        user_id = user.get('id', '')
+        email = user.get('email', '')
+        pro = is_pro(user_id)
+        usage = get_usage(user_id) if not pro else 0
+        
+        self._json(200, {
+            'email': email,
+            'plan': 'pro' if pro else 'free',
+            'usage_today': usage,
+            'limit': 'unlimited' if pro else FREE_DAILY_LIMIT,
+            'remaining': 'unlimited' if pro else max(0, FREE_DAILY_LIMIT - usage)
+        })
 
     def _handle_stripe(self, action):
         from stripe_handler import handle_checkout, handle_portal, handle_webhook
