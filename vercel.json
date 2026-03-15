@@ -16,7 +16,7 @@
     { "source": "/favicon.png", "destination": "/landing/favicon.png" },
     { "source": "/favicon-32.png", "destination": "/landing/favicon-32.png" },
     { "source": "/og.png", "destination": "/landing/og.png" },
-    { "source": "/(.*\\.(png|jpg|css|js|ico|svg))", "destination": "/landing/$1" },
+
     { "source": "/(.*)", "destination": "/landing/index.html" }
   ]
 }
