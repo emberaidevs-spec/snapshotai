@@ -15,7 +15,7 @@ STRIPE_WEBHOOK_SECRET = os.environ.get('SNAPSHOTAI_STRIPE_WEBHOOK_SECRET', '')
 PRICE_ID = os.environ.get('SNAPSHOTAI_STRIPE_PRICE_ID', 'price_1TAij45B7nvYWk02xbDUuXtw')
 SUPABASE_URL = os.environ.get('SNAPSHOTAI_SUPABASE_URL', '')
 SUPABASE_SERVICE_KEY = os.environ.get('SNAPSHOTAI_SUPABASE_SERVICE_KEY', '')
-SITE_URL = 'https://snapshotai-beta.vercel.app'
+SITE_URL = 'https://snapshotai.app'
 
 
 def update_subscription_status(user_id, plan, stripe_customer_id=None, stripe_subscription_id=None):

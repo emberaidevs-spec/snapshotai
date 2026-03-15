@@ -183,7 +183,7 @@ class OAuthCallbackHandler(http.server.BaseHTTPRequestHandler):
             h2{font-size:18px;font-weight:500;margin-bottom:8px;}
             .spinner{width:20px;height:20px;border:2px solid rgba(255,255,255,0.06);border-top-color:#8b5cf6;border-radius:50%;animation:spin .7s linear infinite;margin:20px auto 0;}
             @keyframes spin{to{transform:rotate(360deg);}}</style></head><body><div class="c">
-            <img src="https://snapshotai-beta.vercel.app/logo-256.png" class="logo" alt="">
+            <img src="https://snapshotai.app/logo-256.png" class="logo" alt="">
             <h2>Signing you in</h2>
             <p style="color:#71717a;font-size:14px;">Completing authentication...</p>
             <div class="spinner"></div>
@@ -196,7 +196,7 @@ class OAuthCallbackHandler(http.server.BaseHTTPRequestHandler):
                 if (token) {
                     fetch("/callback?access_token=" + encodeURIComponent(token))
                     .then(() => {
-                        window.location.href = "https://snapshotai-beta.vercel.app/dashboard";
+                        window.location.href = "https://snapshotai.app/dashboard";
                     });
                 }
             }
@@ -364,7 +364,7 @@ class ResultOverlay(QWidget):
             QPushButton {{ background: transparent; border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; color: {CAPTION}; font-size: 11px; padding: 0 10px; }}
             QPushButton:hover {{ border-color: rgba(255,255,255,0.12); color: {BODY}; }}
         """)
-        dash_btn.clicked.connect(lambda: webbrowser.open("https://snapshotai-beta.vercel.app/dashboard"))
+        dash_btn.clicked.connect(lambda: webbrowser.open("https://snapshotai.app/dashboard"))
         header.addWidget(dash_btn)
         
         close_btn = QPushButton("✕")
