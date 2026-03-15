@@ -360,15 +360,37 @@
             $auth.style.display = 'block';
             return;
         }
+        // Read subscription + usage directly from Supabase
+        let plan = 'free';
+        let usage = 0;
         try {
-            const resp = await fetch('/api/status', {
-                headers: { 'Authorization': `Bearer ${session.access_token}` }
-            });
-            const data = await resp.json();
-            renderDashboard(session, data);
-        } catch (e) {
-            renderDashboard(session, { email: session.user.email, plan: 'free', usage_today: 0, limit: 15, remaining: 15 });
-        }
+            const { data: sub } = await sb.from('snapshotai_subscriptions')
+                .select('plan')
+                .eq('user_id', session.user.id)
+                .single();
+            if (sub && sub.plan) plan = sub.plan;
+        } catch (e) {}
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const { data: usageData } = await sb.from('snapshotai_usage')
+                .select('count')
+                .eq('user_id', session.user.id)
+                .eq('date', today)
+                .single();
+            if (usageData) usage = usageData.count;
+        } catch (e) {}
+        
+        const isPro = plan === 'pro';
+        const limit = isPro ? 'unlimited' : 15;
+        const remaining = isPro ? 'unlimited' : Math.max(0, 15 - usage);
+        
+        renderDashboard(session, {
+            email: session.user.email,
+            plan: plan,
+            usage_today: usage,
+            limit: limit,
+            remaining: remaining
+        });
     }
 
     function renderDashboard(session, data) {
@@ -445,7 +467,7 @@
             btn.textContent = 'Loading...';
             btn.disabled = true;
             try {
-                const resp = await fetch('/api/portal', {
+                const resp = await fetch('http://5.78.191.207:8765/api/portal', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: session.user.id })

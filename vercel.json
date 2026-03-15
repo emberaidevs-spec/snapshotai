@@ -1,7 +1,6 @@
 {
   "buildCommand": "",
   "outputDirectory": "landing",
-
   "rewrites": [
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/pricing", "destination": "/pricing.html" },
