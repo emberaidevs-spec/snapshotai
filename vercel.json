@@ -1,22 +1,12 @@
 {
   "buildCommand": "",
-  "functions": {
-    "api/*.py": {
-      "runtime": "@vercel/python@4.6.0",
-      "maxDuration": 10
-    }
-  },
+  "outputDirectory": "landing",
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/:path*" },
-    { "source": "/dashboard", "destination": "/landing/dashboard.html" },
-    { "source": "/pricing", "destination": "/landing/pricing.html" },
-    { "source": "/docs", "destination": "/landing/docs.html" },
-    { "source": "/help", "destination": "/landing/docs.html" },
-    { "source": "/logo-256.png", "destination": "/landing/logo-256.png" },
-    { "source": "/favicon.png", "destination": "/landing/favicon.png" },
-    { "source": "/favicon-32.png", "destination": "/landing/favicon-32.png" },
-    { "source": "/og.png", "destination": "/landing/og.png" },
-
-    { "source": "/(.*)", "destination": "/landing/index.html" }
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/pricing", "destination": "/pricing.html" },
+    { "source": "/docs", "destination": "/docs.html" },
+    { "source": "/help", "destination": "/docs.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
