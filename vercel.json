@@ -12,6 +12,11 @@
     { "source": "/pricing", "destination": "/landing/pricing.html" },
     { "source": "/docs", "destination": "/landing/docs.html" },
     { "source": "/help", "destination": "/landing/docs.html" },
+    { "source": "/logo-256.png", "destination": "/landing/logo-256.png" },
+    { "source": "/favicon.png", "destination": "/landing/favicon.png" },
+    { "source": "/favicon-32.png", "destination": "/landing/favicon-32.png" },
+    { "source": "/og.png", "destination": "/landing/og.png" },
+    { "source": "/(.*\\.(png|jpg|css|js|ico|svg))", "destination": "/landing/$1" },
     { "source": "/(.*)", "destination": "/landing/index.html" }
   ]
 }
