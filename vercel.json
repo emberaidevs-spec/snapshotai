@@ -1,12 +1,7 @@
 {
   "buildCommand": "",
   "outputDirectory": "landing",
-  "functions": {
-    "landing/api/*.py": {
-      "runtime": "@vercel/python@4.6.0",
-      "maxDuration": 10
-    }
-  },
+
   "rewrites": [
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/pricing", "destination": "/pricing.html" },
